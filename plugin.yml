@@ -1,0 +1,24 @@
+name: AbbaCaving
+main: me.lennartVH01.Main
+version: 0.1
+description: Abba Caving Management Plugin
+commands:
+  abba:
+    description: Abba hub command
+permissions:
+  AbbaCaving.join:
+    default: true
+  AbbaCaving.leave:
+    default: true
+  AbbaCaving.info:
+    default: true
+  AbbaCaving.create:
+    default: op
+  AbbaCaving.remove:
+    default: op
+  AbbaCaving.open:
+    default: op
+  AbbaCaving.close:
+    default: op
+  AbbaCaving.joinClosed:
+    default: op

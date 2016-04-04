@@ -1,6 +1,8 @@
 package me.lennartVH01;
 
-import java.util.logging.Logger;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,7 +12,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin{
-	public final Logger logger = Logger.getLogger("Minecraft");
 	public final FileConfiguration config = this.getConfig();
 	
 	public static Main plugin;
@@ -20,7 +21,7 @@ public class Main extends JavaPlugin{
 	@Override
 	public void onEnable(){
 		//Config
-		if(!config.contains("BlockValues")){
+		if(config.get("BlockValues") == null){
 			config.addDefault("BlockValues.iron_ore", 1);
 			config.addDefault("BlockValues.redstone_ore", 2);
 			config.addDefault("BlockValues.gold_ore", 4);
@@ -29,7 +30,6 @@ public class Main extends JavaPlugin{
 			config.addDefault("BlockValues.emerald_ore", 10);
 		}
 		
-		config.addDefault("GameIndex", 1);
 		config.options().copyDefaults(true);
 		this.saveConfig();
 		
@@ -38,7 +38,7 @@ public class Main extends JavaPlugin{
 		
 		
 		PluginDescriptionFile pluginDescFile = this.getDescription();
-		this.logger.info(pluginDescFile.getName() + " [" + pluginDescFile.getVersion() + "] Initialized");
+		System.out.println(pluginDescFile.getName() + " [" + pluginDescFile.getVersion() + "] Initialized");
 	}
 	@Override
 	public void onDisable(){
@@ -51,7 +51,7 @@ public class Main extends JavaPlugin{
 			if(sender instanceof Player){
 				p = (Player) sender;
 			}else{
-				logger.info("Must be ingame to use commands");
+				System.out.println("Must be ingame to use commands");
 				return false;
 			}
 			if(args.length == 0){
@@ -75,9 +75,9 @@ public class Main extends JavaPlugin{
 					if(args.length > 1){
 						gameName = args[1];
 					}else{
-						gameName = "Abba" + config.getInt("GameIndex");
+						DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm");
+						gameName = "Abba" + dateFormat.format(new Date());
 					}
-					config.set("GameIndex", config.getInt("GameIndex") + 1);
 					AbbaGame abbaGame = new AbbaGame(p.getLocation(), gameName);
 					
 				}

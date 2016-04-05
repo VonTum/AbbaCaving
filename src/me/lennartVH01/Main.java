@@ -45,8 +45,7 @@ public class Main extends JavaPlugin{
 	public void onEnable(){
 		
 		//Config
-		config.options().copyDefaults(true);
-		saveConfig();
+		this.saveDefaultConfig();
 		
 		// get Item Point Values
 		List<Map<?,?>> itemPointMaps = config.getMapList("ItemValues");

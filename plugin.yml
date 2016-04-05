@@ -12,6 +12,8 @@ permissions:
     default: true
   AbbaCaving.info:
     default: true
+  AbbaCaving.joinFull:
+    default: op
   AbbaCaving.create:
     default: op
   AbbaCaving.remove:
@@ -20,5 +22,7 @@ permissions:
     default: op
   AbbaCaving.close:
     default: op
-  AbbaCaving.joinClosed:
+  AbbaCaving.tp:
+    default: op
+  AbbaCaving.start:
     default: op

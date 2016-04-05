@@ -1,0 +1,32 @@
+# Abba Caving Plugin by lennartVH01
+
+# Points awarded for each item at the end of an Abba Match
+ItemValues:
+- type: IRON_ORE
+  Value: 1
+- type: REDSTONE_ORE
+  Value: 2
+- type: GOLD_ORE
+  Value: 4
+- type: LAPIS_ORE
+  Value: 8
+- type: DIAMOND_ORE
+  Value: 10
+- type: EMERALD_ORE
+  Value: 10
+- type: DIAMOND_BARDING
+  Value: 10
+- type: GOLDEN_APPLE
+  damage: 1
+  Value: 10
+
+# Prohibited items, automatically includes entries in BlockValues
+Contraband:
+  - potion
+  - golden_apple
+
+# Game duration in seconds
+GameDuration: 1800
+
+# Max players per game, users with permission AbbaCaving.joinFull can still join
+PlayerCap: 10

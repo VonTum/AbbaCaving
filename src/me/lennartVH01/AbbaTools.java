@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -20,8 +21,8 @@ public class AbbaTools {
 	
 	
 	
-	public static void create(String name, Location spawn, int duration){
-		AbbaGame game = new AbbaGame(name, spawn, duration);
+	public static void create(String name, Location spawn, int duration, int playerCap){
+		AbbaGame game = new AbbaGame(name, spawn, duration, playerCap);
 		games.add(game);
 	}
 	public static boolean removeAbbaGame(String name){
@@ -49,6 +50,11 @@ public class AbbaTools {
 			return null;
 		}
 	}
+	public static ItemStack[] getContraband(Inventory i){
+		return null;
+	}
+	
+	
 	
 	public static calculatedScore calcScore(Inventory inv){
 		calculatedScore points = new calculatedScore(itemPairs);
@@ -70,4 +76,7 @@ public class AbbaTools {
 	public static List<AbbaGame> getGames() {
 		return games;
 	}
+
+
+	
 }

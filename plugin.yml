@@ -28,3 +28,5 @@ permissions:
     default: op
   AbbaCaving.start:
     default: op
+  AbbaGame.reload:
+    default: op

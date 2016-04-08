@@ -11,12 +11,14 @@ NotifyTimes:
 - 60
 
 # Max players per game, users with permission AbbaCaving.joinFull can still join
-PlayerCap: 10
+PlayerCap: 1
 
 # Ratio of spoils given per player: 
-#   Top: first n players receive these chunks of total wins
-#   Pot: Amount to be added to general Pot
 #   All: Amount to be spread over all participants
+#   Pot: Amount to be added to general Pot
+#   Top: first n players receive these chunks of total wins
+
+
 WinRatios:
   All: 0.05
   Pot: 0.05

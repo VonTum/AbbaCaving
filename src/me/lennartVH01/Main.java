@@ -2,11 +2,14 @@ package me.lennartVH01;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.UUID;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -14,6 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin{
@@ -30,8 +34,9 @@ public class Main extends JavaPlugin{
 	
 	
 	
+	public final Map<UUID, AbbaGame> playerMap = new HashMap<UUID, AbbaGame>();
 	
-	
+	public final String[] abbaSubCommands = new String[]{"calc", "close", "create", "info", "join", "leave", "list", "open", "reload", "remove"};
 	
 	
 	public final FileConfiguration config = this.getConfig();
@@ -42,6 +47,8 @@ public class Main extends JavaPlugin{
 	
 	@Override
 	public void onEnable(){
+		
+		
 		
 		
 		
@@ -84,27 +91,92 @@ public class Main extends JavaPlugin{
 			}
 			switch(args[0].toLowerCase()){
 			case "join":
-				if(sender.hasPermission("AbbaGame.join")){
-					
-					
-					
-					
+				if(sender instanceof Player){
+					if(sender.hasPermission("AbbaCaving.join")){
+						Player p = (Player) sender;
+						AbbaGame game;
+						
+						if(args.length >= 2){
+							game = AbbaTools.getAbbaGame(args[1]);
+						}else{
+							game = AbbaTools.getAbbaGame();
+						}
+						if(!(game.isOpen() || p.hasPermission("AbbaCaving.joinClosed"))){
+							p.sendMessage("§cThis game is closed!");
+							return false;
+						}
+						if(!(game.hasRoom() || p.hasPermission("AbbaCaving.joinFull"))){
+							p.sendMessage("§cThis game is full!");
+							return false;
+						}
+						
+						if(!p.hasPermission("AbbaCaving.canCarryContraband")){
+							ItemStack[] contraband = AbbaTools.getContraband(p.getInventory());
+							if(contraband != null && contraband.length >= 1){
+								p.sendMessage("§cYou cannot carry " + contraband[0].getType().toString() + " with you on an abba game!");
+								return false;
+							}
+						}
+						
+						AbbaGame oldGame = playerMap.get(p.getUniqueId());
+						if(oldGame != null){
+							if(p.hasPermission("AbbaCaving.leave")){
+								oldGame.leave(p);
+								playerMap.remove(p.getUniqueId());
+								p.sendMessage("Left game \"" + oldGame.getName() + "\"");
+							}else{
+								p.sendMessage("§cYou don't have permission to leave the current game!");
+							}
+						}
+						
+						game.addPlayer(p);
+						playerMap.put(p.getUniqueId(), game);
+						p.sendMessage("Joined game \"" + game.getName() + "\"");
+						
+						p.teleport(game.getSpawn());
+						p.setGameMode(GameMode.SURVIVAL);
+						return true;
+					}else{
+						sender.sendMessage(Messages.noPermissionError);
+						return false;
+					}
 				}else{
-					sender.sendMessage(Messages.noPermissionError);
+					sender.sendMessage(Messages.mustBeInGameError);
 					return false;
 				}
-				
-				break;
 			case "leave":
-				
-				break;
+				if(sender instanceof Player){
+					if(sender.hasPermission("AbbaCaving.leave")){
+						Player p = (Player) sender;
+						AbbaGame game = playerMap.get(p.getUniqueId());
+						game.leave(p);
+						playerMap.remove(p.getUniqueId());
+						p.sendMessage("Left game \"" + game.getName() + "\"");
+						return true;
+					}else{
+						sender.sendMessage(Messages.noPermissionError);
+						return false;
+					}
+					
+				}else{
+					sender.sendMessage(Messages.mustBeInGameError);
+					return false;
+				}
 			case "info":
 				if(sender.hasPermission("AbbaCaving.info")){
 					AbbaGame game;
 					if(args.length >= 2){
 						game = AbbaTools.getAbbaGame(args[1]);
+						if(game == null){
+							sender.sendMessage("§cGame \"" + args[1] + "\" doesn't exist");
+							return false;
+						}
 					}else{
 						game = AbbaTools.getAbbaGame();
+						if(game == null){
+							sender.sendMessage("§cNo Games found!");
+							return false;
+						}
 					}
 					sender.sendMessage("Game \"" + game.getName() + "\" " + (game.isOpen() ? "§aOpen":"§cClosed"));
 				}else{
@@ -117,9 +189,9 @@ public class Main extends JavaPlugin{
 					sender.sendMessage("Games:");
 					for(AbbaGame g:AbbaTools.getGames()){
 						if(g.isOpen()){
-							sender.sendMessage("- §a" + g.getName());
+							sender.sendMessage("- §a" + g.getName() + " (" + g.getPlayerCount() + "/" + g.getMaxPlayers() + ")");
 						}else{
-							sender.sendMessage("- §7§o" + g.getName());
+							sender.sendMessage("- §7§o" + g.getName() + " (" + g.getPlayerCount() + "/" + g.getMaxPlayers() + ")");
 						}
 					}
 					return true;
@@ -212,11 +284,17 @@ public class Main extends JavaPlugin{
 					}
 					
 					
+					
+					while(AbbaTools.getAbbaGame(gameName) != null){
+						gameName += "_";
+					}
 					//create game
-					AbbaTools.create(gameName, gameSpawn, config.getInt("GameDuration"));
+					AbbaTools.create(gameName, gameSpawn, config.getInt("GameDuration"), config.getInt("PlayerCap"));
 					sender.sendMessage("Successfully created game \"" + gameName + "\"");
 					return true;
 					
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
 				}
 				break;
 			case "remove":
@@ -238,13 +316,68 @@ public class Main extends JavaPlugin{
 					return false;
 				}
 				
-			
+			case "open":
+				if(sender.hasPermission("AbbaCaving.open")){
+					AbbaGame game;
+					if(args.length >= 2){
+						game = AbbaTools.getAbbaGame(args[1]);
+						if(game == null){
+							sender.sendMessage("§cThere is no game named \"" + args[1] + "\"");
+							return false;
+						}
+					}else{
+						game = AbbaTools.getAbbaGame();
+						if(game == null){
+							sender.sendMessage("§cNo game found");
+							return false;
+						}
+					}
+					game.open();
+					sender.sendMessage("Opened game \"" + args[1] + "\"");
+					return true;
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
+			case "close":
+				if(sender.hasPermission("AbbaCaving.open")){
+					AbbaGame game;
+					if(args.length >= 2){
+						game = AbbaTools.getAbbaGame(args[1]);
+						if(game == null){
+							sender.sendMessage("§cThere is no game named \"" + args[1] + "\"");
+							return false;
+						}
+					}else{
+						game = AbbaTools.getAbbaGame();
+						if(game == null){
+							sender.sendMessage("§cNo game found");
+							return false;
+						}
+					}
+					game.close();
+					sender.sendMessage("Closed game \"" + args[1] + "\"");
+					return true;
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
 			
 			
 			
 			//Abba help
+			case "reload":
+				if(sender.hasPermission("AbbaCaving.reload")){
+					sender.sendMessage("Reloading config...");
+					this.reloadConfig();
+					sender.sendMessage("Reload Complete.");
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
+				break;
 			default:
-				sender.sendMessage("Usage:\n - §aabba join§r: Joins the Abba Match\n - §aabba leave§f: Leaves current Abba Game\n - §aabba info§f: Displays info about an Abba Match\n - §aabba create§f: Creates an Abba Game at current location\n - §aabba remove§f: Stops game\n - §aabba open§f: Opens a game\n - §aabba close§f: Closes a game");
+				sender.sendMessage("Usage:\n - §aabba join§r: Joins the Abba Match\n - §aabba leave§f: Leaves current Abba Game\n - §aabba info§f: Displays info about an Abba Match\n - §aabba create§f: Creates an Abba Game at current location\n - §aabba remove§f: Stops game\n - §aabba open§f: Allows players to join the game\n - §aabba close§f: Prevents players from joining");
 				return false;
 			}
 			
@@ -254,5 +387,26 @@ public class Main extends JavaPlugin{
 		
 		
 		return false;
+	}
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args){
+		List<String> cmds = new ArrayList<String>();
+		if(command.getName().equalsIgnoreCase("abba")){
+			if(args.length == 0){
+				for(String s:abbaSubCommands){
+					if(sender.hasPermission("AbbaCaving." + s)){
+						cmds.add(s);
+					}
+				}
+			}else if(args.length == 1){
+				for(String s:abbaSubCommands){
+					if(sender.hasPermission("AbbaCaving." + s) && s.startsWith(args[0])){
+						cmds.add(s);
+					}
+				}
+			}else{
+			}
+		}
+		return cmds;
 	}
 }

@@ -1,5 +1,32 @@
 # Abba Caving Plugin by lennartVH01
 
+# Game duration in seconds
+GameDuration: 1800
+
+# Times in game to notify players of the time left in seconds
+# Example: a NotifyTime of 120 will let all players know when there are 2 minutes left
+NotifyTimes:
+- 900
+- 300
+- 60
+
+# Max players per game, users with permission AbbaCaving.joinFull can still join
+PlayerCap: 10
+
+# Ratio of spoils given per player: 
+#   Top: first n players receive these chunks of total wins
+#   Pot: Amount to be added to general Pot
+#   All: Amount to be spread over all participants
+WinRatios:
+  All: 0.05
+  Pot: 0.05
+  Top:
+  - 0.6
+  - 0.2
+  - 0.1
+
+
+
 # Points awarded for each item at the end of an Abba Match
 ItemValues:
 - type: IRON_ORE
@@ -22,11 +49,6 @@ ItemValues:
 
 # Prohibited items, automatically includes entries in BlockValues
 Contraband:
-  - potion
-  - golden_apple
-
-# Game duration in seconds
-GameDuration: 1800
-
-# Max players per game, users with permission AbbaCaving.joinFull can still join
-PlayerCap: 10
+- type: GOLDEN_APPLE
+  damage: 0
+- type: POTION

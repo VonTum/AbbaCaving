@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin{
@@ -44,8 +43,13 @@ public class Main extends JavaPlugin{
 	@Override
 	public void onEnable(){
 		
+		
+		
 		//Config
 		this.saveDefaultConfig();
+		
+		
+		
 		
 		// get Item Point Values
 		List<Map<?,?>> itemPointMaps = config.getMapList("ItemValues");
@@ -64,7 +68,7 @@ public class Main extends JavaPlugin{
 			valueItemPairs.add(new ValueItemPair(stack, value));
 		}
 		
-		AbbaGame.initialize(valueItemPairs);
+		AbbaTools.initialize(valueItemPairs);
 		
 		
 	}
@@ -80,14 +84,49 @@ public class Main extends JavaPlugin{
 			}
 			switch(args[0].toLowerCase()){
 			case "join":
+				if(sender.hasPermission("AbbaGame.join")){
+					
+					
+					
+					
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
 				
 				break;
 			case "leave":
 				
 				break;
 			case "info":
-				
+				if(sender.hasPermission("AbbaCaving.info")){
+					AbbaGame game;
+					if(args.length >= 2){
+						game = AbbaTools.getAbbaGame(args[1]);
+					}else{
+						game = AbbaTools.getAbbaGame();
+					}
+					sender.sendMessage("Game \"" + game.getName() + "\" " + (game.isOpen() ? "§aOpen":"§cClosed"));
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
 				break;
+			case "list":
+				if(sender.hasPermission("AbbaCaving.list")){
+					sender.sendMessage("Games:");
+					for(AbbaGame g:AbbaTools.getGames()){
+						if(g.isOpen()){
+							sender.sendMessage("- §a" + g.getName());
+						}else{
+							sender.sendMessage("- §7§o" + g.getName());
+						}
+					}
+					return true;
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
 			case "calc":
 				if(sender.hasPermission("AbbaCaving.calc")){
 					Player calcPlayer;
@@ -106,7 +145,7 @@ public class Main extends JavaPlugin{
 						}
 					}
 					
-					calculatedScore score = AbbaGame.calcScore(calcPlayer.getInventory());
+					calculatedScore score = AbbaTools.calcScore(calcPlayer.getInventory());
 					for(int i = 0; i < score.size(); i++){
 						if(score.getItemCount(i) != 0)
 							sender.sendMessage(score.getItemCount(i) + "x" + score.getItemStack(i).getType().toString() + ": " + score.getItemPoints(i));
@@ -115,7 +154,7 @@ public class Main extends JavaPlugin{
 					
 					
 				}else{
-					sender.sendMessage("§cYou don't have permission to use this command!");
+					sender.sendMessage(Messages.noPermissionError);
 					return false;
 				}
 				
@@ -138,7 +177,7 @@ public class Main extends JavaPlugin{
 					if(args.length >= 2){
 						gameName = args[1];
 					}else{
-						DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm");
+						DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 						gameName = "Abba" + dateFormat.format(new Date());
 						
 					}
@@ -173,15 +212,32 @@ public class Main extends JavaPlugin{
 					}
 					
 					
-					
-					AbbaGame abbaGame = new AbbaGame(gameSpawn, gameName);
-					
+					//create game
+					AbbaTools.create(gameName, gameSpawn, config.getInt("GameDuration"));
+					sender.sendMessage("Successfully created game \"" + gameName + "\"");
+					return true;
 					
 				}
 				break;
 			case "remove":
+				if(sender.hasPermission("AbbaCaving.remove")){
+					if(args.length >= 2){
+						if(AbbaTools.removeAbbaGame(args[1])){
+							sender.sendMessage("Successfully removed game \"" + args[1] + "\"");
+							return true;
+						}else{
+							sender.sendMessage("§cNo such game \"" + args[1] + "\"");
+							return false;
+						}
+					}else{
+						sender.sendMessage("Usage: /abba remove <game>");
+						return false;
+					}
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
 				
-				break;
 			
 			
 			

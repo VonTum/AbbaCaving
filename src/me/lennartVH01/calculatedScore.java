@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.bukkit.inventory.ItemStack;
 
-public class calculatedScore {
+public class CalculatedScore {
 	public int total = 0;
 	public ItemStack[] items;
 	public int[] itemCount;
 	public int[] itemPoints;
 	
-	public calculatedScore(List<ValueItemPair> itemPairs){
+	public CalculatedScore(List<ValueItemPair> itemPairs){
 		int size = itemPairs.size();
 		items = new ItemStack[size];
 		itemCount = new int[size];

@@ -17,8 +17,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Main extends JavaPlugin{
 	
@@ -34,22 +34,36 @@ public class Main extends JavaPlugin{
 	
 	
 	
-	public final Map<UUID, AbbaGame> playerMap = new HashMap<UUID, AbbaGame>();
+	public Map<UUID, AbbaGame> playerMap = new HashMap<UUID, AbbaGame>();
+	
+	public List<AbbaGame> ongoingGames = new ArrayList<AbbaGame>();
 	
 	public final String[] abbaSubCommands = new String[]{"calc", "close", "create", "info", "join", "leave", "list", "open", "reload", "remove"};
 	
 	
-	public final FileConfiguration config = this.getConfig();
-	
-	public static Main plugin;
+	public FileConfiguration config = this.getConfig();
 	
 	
+	public EventListener evtListener = new EventListener();
 	
 	@Override
 	public void onEnable(){
+		// Event handler
+		evtListener.initialize(this);
+		getServer().getPluginManager().registerEvents(evtListener, this);
 		
-		
-		
+		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+			
+			@Override
+			public void run() {
+				for(AbbaGame game:AbbaTools.getGames()){
+					if(game.isRunning() && System.currentTimeMillis() > game.endTime){
+						game.finishGame();
+					}
+				}
+				System.out.println("ding!");
+			}
+		}, 0, 20);
 		
 		
 		//Config
@@ -144,6 +158,9 @@ public class Main extends JavaPlugin{
 					sender.sendMessage(Messages.mustBeInGameError);
 					return false;
 				}
+				
+				
+				
 			case "leave":
 				if(sender instanceof Player){
 					if(sender.hasPermission("AbbaCaving.leave")){
@@ -162,13 +179,16 @@ public class Main extends JavaPlugin{
 					sender.sendMessage(Messages.mustBeInGameError);
 					return false;
 				}
+				
+				
+				
 			case "info":
 				if(sender.hasPermission("AbbaCaving.info")){
 					AbbaGame game;
 					if(args.length >= 2){
 						game = AbbaTools.getAbbaGame(args[1]);
 						if(game == null){
-							sender.sendMessage("§cGame \"" + args[1] + "\" doesn't exist");
+							sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
 							return false;
 						}
 					}else{
@@ -184,6 +204,9 @@ public class Main extends JavaPlugin{
 					return false;
 				}
 				break;
+				
+				
+				
 			case "list":
 				if(sender.hasPermission("AbbaCaving.list")){
 					sender.sendMessage("Games:");
@@ -199,6 +222,9 @@ public class Main extends JavaPlugin{
 					sender.sendMessage(Messages.noPermissionError);
 					return false;
 				}
+				
+				
+				
 			case "calc":
 				if(sender.hasPermission("AbbaCaving.calc")){
 					Player calcPlayer;
@@ -217,7 +243,7 @@ public class Main extends JavaPlugin{
 						}
 					}
 					
-					calculatedScore score = AbbaTools.calcScore(calcPlayer.getInventory());
+					CalculatedScore score = AbbaTools.calcScore(calcPlayer.getInventory());
 					for(int i = 0; i < score.size(); i++){
 						if(score.getItemCount(i) != 0)
 							sender.sendMessage(score.getItemCount(i) + "x" + score.getItemStack(i).getType().toString() + ": " + score.getItemPoints(i));
@@ -297,6 +323,9 @@ public class Main extends JavaPlugin{
 					sender.sendMessage(Messages.noPermissionError);
 				}
 				break;
+				
+				
+				
 			case "remove":
 				if(sender.hasPermission("AbbaCaving.remove")){
 					if(args.length >= 2){
@@ -304,7 +333,7 @@ public class Main extends JavaPlugin{
 							sender.sendMessage("Successfully removed game \"" + args[1] + "\"");
 							return true;
 						}else{
-							sender.sendMessage("§cNo such game \"" + args[1] + "\"");
+							sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
 							return false;
 						}
 					}else{
@@ -316,13 +345,15 @@ public class Main extends JavaPlugin{
 					return false;
 				}
 				
+				
+				
 			case "open":
 				if(sender.hasPermission("AbbaCaving.open")){
 					AbbaGame game;
 					if(args.length >= 2){
 						game = AbbaTools.getAbbaGame(args[1]);
 						if(game == null){
-							sender.sendMessage("§cThere is no game named \"" + args[1] + "\"");
+							sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
 							return false;
 						}
 					}else{
@@ -339,13 +370,16 @@ public class Main extends JavaPlugin{
 					sender.sendMessage(Messages.noPermissionError);
 					return false;
 				}
+				
+				
+				
 			case "close":
 				if(sender.hasPermission("AbbaCaving.open")){
 					AbbaGame game;
 					if(args.length >= 2){
 						game = AbbaTools.getAbbaGame(args[1]);
 						if(game == null){
-							sender.sendMessage("§cThere is no game named \"" + args[1] + "\"");
+							sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
 							return false;
 						}
 					}else{
@@ -375,6 +409,95 @@ public class Main extends JavaPlugin{
 					sender.sendMessage(Messages.noPermissionError);
 					return false;
 				}
+				break;
+				
+				
+				
+			case "start":
+				if(sender.hasPermission("AbbaCaving.start")){
+					AbbaGame game;
+					if(args.length >= 2){
+						game = AbbaTools.getAbbaGame(args[1]);
+						if(game == null){
+							sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
+							return false;
+						}
+					}else{
+						game = AbbaTools.getAbbaGame();
+						if(game == null){
+							sender.sendMessage("§cNo games found");
+							return false;
+						}
+					}
+					if(game.isRunning()){
+						sender.sendMessage("§cGame already running!");
+						return false;
+					}else{
+						game.start();
+						sender.sendMessage("Game started, " + game.duration + " seconds left!");
+						return true;
+					}
+					
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
+				
+				
+				
+			case "config":
+				if(sender.hasPermission("AbbaCaving.config")){
+					if(args.length >= 2){
+						if(args.length >= 3){
+							AbbaGame game = AbbaTools.getAbbaGame(args[1]);
+							if(game == null){
+								sender.sendMessage(Messages.gameNotFoundError);
+							}
+							switch(args[2].toLowerCase()){
+							case "timer":
+								
+								if(args.length >= 4){
+									int newTime;
+								
+									try{
+										newTime = Integer.parseInt(args[3]);
+									}catch(NumberFormatException e){
+										sender.sendMessage("§cPlease specify a number when you use this command");
+										return false;
+									}
+									if(newTime <= 0){
+										sender.sendMessage("§cPlease specify a stricktly positive number");
+										return false;
+									}
+									if(game.isRunning()){
+										game.setEndTime(System.currentTimeMillis() + newTime * 1000);
+										
+									}else{
+										game.setDuration(newTime);
+									}
+									sender.sendMessage("Time has been updated!");
+									return true;
+									
+								}else{
+									sender.sendMessage("§cPlease specify new time");
+									return false;
+								}
+							}
+						}else{
+							sender.sendMessage("§cChoose an option!");
+							return false;
+						}
+					}else{
+						sender.sendMessage(Messages.mustSpecifyGameError);
+						return false;
+					}
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
+				
+				
+				
 				break;
 			default:
 				sender.sendMessage("Usage:\n - §aabba join§r: Joins the Abba Match\n - §aabba leave§f: Leaves current Abba Game\n - §aabba info§f: Displays info about an Abba Match\n - §aabba create§f: Creates an Abba Game at current location\n - §aabba remove§f: Stops game\n - §aabba open§f: Allows players to join the game\n - §aabba close§f: Prevents players from joining");

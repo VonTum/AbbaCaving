@@ -2,10 +2,26 @@ name: AbbaCaving
 main: me.lennartVH01.Main
 version: 0.1
 description: Abba Caving Management Plugin
+author: lennartVH01
 commands:
   abba:
     description: Abba hub command
 permissions:
+  AbbaCaving.player.*:
+    description: Gives access to all commands for players
+    children:
+      AbbaCaving.join: true
+      AbbaCaving.leave: true
+      AbbaCaving.info: true
+      AbbaCaving.list: true
+      AbbaCaving.calc: true
+  AbbaCaving.admin.*:
+    AbbaCaving.create: true
+    AbbaCaving.remove: true
+    AbbaCaving.reload: true
+    AbbaCaving.open: true
+    AbbaCaving.close: true
+    AbbaCaving.start: true
   AbbaCaving.join:
     default: true
   AbbaCaving.leave:
@@ -13,6 +29,8 @@ permissions:
   AbbaCaving.info:
     default: true
   AbbaCaving.list:
+    default: true
+  AbbaCaving.calc:
     default: true
   AbbaCaving.joinFull:
     default: op
@@ -28,5 +46,9 @@ permissions:
     default: op
   AbbaCaving.start:
     default: op
-  AbbaGame.reload:
+  AbbaCaving.reload:
+    default: op
+  AbbaCaving.config:
+    default: op
+  AbbaCaving.registerChest:
     default: op

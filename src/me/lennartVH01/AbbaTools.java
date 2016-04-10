@@ -56,8 +56,8 @@ public class AbbaTools {
 	
 	
 	
-	public static calculatedScore calcScore(Inventory inv){
-		calculatedScore points = new calculatedScore(itemPairs);
+	public static CalculatedScore calcScore(Inventory inv){
+		CalculatedScore points = new CalculatedScore(itemPairs);
 		
 		//might not be the most efficient, should probably use a HashMap for the itemPairs array
 		for(int i = 0; i < itemPairs.size(); i++){

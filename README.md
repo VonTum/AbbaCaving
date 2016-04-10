@@ -5,7 +5,7 @@ Simple Abba managing plugin
 //todo usage
 
 ## Features
-// todo features
+Abba inventory calculator
 
 ## Planned Features
 - Allow betting on winner of game

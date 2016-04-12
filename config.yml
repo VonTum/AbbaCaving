@@ -21,14 +21,12 @@ PlayerCap: 1
 #   Pot: Amount to be added to general Pot
 #   Top: first n players receive these chunks of total wins
 
-
-WinRatios:
-  All: 0.05
-  Pot: 0.05
+# Part of the winnings that go to each player
+WinWeights:
+  All: 1
   Top:
-  - 0.6
-  - 0.2
-  - 0.1
+  - 7
+  - 2
 
 
 

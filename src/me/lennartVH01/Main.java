@@ -3,6 +3,7 @@ package me.lennartVH01;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
 import java.util.UUID;
@@ -11,7 +12,12 @@ import java.text.SimpleDateFormat;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,7 +28,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class Main extends JavaPlugin{
 	
-	
+	private static HashSet<Material> transparentBlocks = new HashSet<Material>();
+	static{
+		transparentBlocks.add(Material.AIR);
+		transparentBlocks.add(Material.SIGN);
+		transparentBlocks.add(Material.SIGN_POST);
+		transparentBlocks.add(Material.WALL_SIGN);
+	}
 	
 	
 	
@@ -40,10 +52,11 @@ public class Main extends JavaPlugin{
 	
 	@Override
 	public void onEnable(){
+		
+		
 		// Event handler
 		evtListener.initialize(this);
 		getServer().getPluginManager().registerEvents(evtListener, this);
-		
 		
 		
 		//Config
@@ -115,7 +128,7 @@ public class Main extends JavaPlugin{
 						AbbaGame oldGame = playerMap.get(p.getUniqueId());
 						if(oldGame != null){
 							if(p.hasPermission("AbbaCaving.leave")){
-								oldGame.leave(p);
+								oldGame.removePlayer(p);
 								playerMap.remove(p.getUniqueId());
 								p.sendMessage("Left game \"" + oldGame.getName() + "\"");
 							}else{
@@ -146,7 +159,7 @@ public class Main extends JavaPlugin{
 					if(sender.hasPermission("AbbaCaving.leave")){
 						Player p = (Player) sender;
 						AbbaGame game = playerMap.get(p.getUniqueId());
-						game.leave(p);
+						game.removePlayer(p);
 						playerMap.remove(p.getUniqueId());
 						p.sendMessage("Left game \"" + game.getName() + "\"");
 						return true;
@@ -464,6 +477,33 @@ public class Main extends JavaPlugin{
 									
 								}else{
 									sender.sendMessage("§cPlease specify new time");
+									return false;
+								}
+							case "addchest":
+								if(sender instanceof Player){
+									Block blockInFront = ((Player) sender).getTargetBlock(transparentBlocks, 5);
+									if(blockInFront.getState() instanceof Chest){
+										for(BlockFace face:new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}){
+											Block blockNextTo = blockInFront.getRelative(face);
+											if(blockNextTo.getState() instanceof Sign){
+												if(AbbaTools.getAbbaGame(args[1]).addChest((Chest) blockInFront.getState(), (Sign) blockNextTo.getState())){
+													sender.sendMessage("Chest created");
+													return true;
+												}else{
+													sender.sendMessage("§cChest already in a game!");
+													return false;
+												}
+											}
+										}
+										
+										sender.sendMessage("§cPut a sign next to the chest!");
+										return false;
+									}else{
+										sender.sendMessage("§cYou must look at a chest to register it!");
+										return false;
+									}
+								}else{
+									sender.sendMessage("§cMust be ingame to register chests!");
 									return false;
 								}
 							}

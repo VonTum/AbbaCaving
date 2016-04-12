@@ -37,10 +37,13 @@ public class AbbaGame {
 	public int playerCap;
 	public List<Player> players;
 	public Map<UUID, CalculatedScore> endStats = new HashMap<UUID, CalculatedScore>();
-	public Map<UUID, Inventory> playerChests = new HashMap<UUID, Inventory>();
+	public Map<UUID, Chest> playerChests = new HashMap<UUID, Chest>();
+	public List<Chest> chests = new ArrayList<Chest>();
+	public List<Sign> signs = new ArrayList<Sign>();
 	private Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 	private Objective abbaObjective = scoreboard.registerNewObjective("AbbaStats", "dummy");
 	private Score timer = abbaObjective.getScore("Time Remaining");
+	
 	
 	public AbbaGame(Main plugin, String name, Location spawn, int duration, int playerCap, int countDownTime){
 		this.plugin = plugin;
@@ -55,6 +58,20 @@ public class AbbaGame {
 			players = new ArrayList<Player>(playerCap);
 		}
 		abbaObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
+	}
+	public void destroy(){
+		for(Sign s:signs){
+			s.setLine(0, "");
+			s.setLine(1, "");
+			s.update();
+		}
+		for(Player p:players){
+			plugin.playerMap.remove(p.getUniqueId());
+			p.sendMessage("§cGame ended!");
+			
+			//probably tp people to spawn or something
+			
+		}
 	}
 	
 	public void start() {
@@ -140,28 +157,16 @@ public class AbbaGame {
 	public void close(){
 		open = false;
 	}
-	public void claimChest(Player p, Sign sign){
-		if(playerChests.containsKey(p.getUniqueId())){
-			p.sendMessage("§cYou already have a chest!");
-			return;
+	public boolean addChest(Chest chest, Sign sign){
+		if(!chests.contains(chest)){
+			chests.add(chest);
+			signs.add(sign);
+			sign.setLine(0, "§9[" + name + "]");
+			sign.update();
+			
+			return true;
 		}
-		Block blockBelowSign = spawn.getWorld().getBlockAt(sign.getX(), sign.getY() - 1, sign.getZ());
-		if(blockBelowSign instanceof InventoryHolder){
-			InventoryHolder chest = (InventoryHolder) blockBelowSign;
-			
-			
-			
-			if(playerChests.containsValue(chest.getInventory())){
-				p.sendMessage("§cThis chest is already claimed!");
-				return;
-			}else{
-				playerChests.put(p.getUniqueId(), chest.getInventory());
-				sign.setLine(2, p.getName());
-				
-			}
-			
-		}
-		
+		return false;
 	}
 	
 	
@@ -187,11 +192,22 @@ public class AbbaGame {
 
 	public void addPlayer(Player p) {
 		players.add(p);
+		int index = playerChests.size();
+		Chest chest = chests.get(index);
+		Sign sign = signs.get(index);
+		sign.setLine(1, p.getName());
+		sign.update();
+		playerChests.put(p.getUniqueId(), chest);
+		
 		
 	}
-	public void leave(Player p) {
+	public void removePlayer(Player p) {
 		players.remove(p);
-		playerChests.remove(p.getUniqueId());
+		int index = chests.indexOf(playerChests.remove(p.getUniqueId()));
+		chests.remove(index);
+		Sign sign = signs.remove(index);
+		sign.setLine(1, "");
+		sign.update();
 	}
 	
 
@@ -214,12 +230,6 @@ public class AbbaGame {
 		endTime = newEndTime;
 		
 	}
-
-	public Map<UUID, Inventory> getPlayerChests() {
-		return playerChests;
-		
-	}
-	
 	
 	
 }

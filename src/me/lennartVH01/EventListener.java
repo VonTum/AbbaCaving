@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -26,18 +27,10 @@ public class EventListener implements Listener{
 	public void onPlayerQuit(PlayerQuitEvent e){
 		AbbaGame game = plugin.playerMap.remove(e.getPlayer().getUniqueId());
 		if(game != null){
-			game.leave(e.getPlayer());
+			game.removePlayer(e.getPlayer());
 		}
 	}
 	
-	@EventHandler
-	public void onInventoryEdit(InventoryInteractEvent e){
-		UUID p = e.getView().getPlayer().getUniqueId();
-		if(!plugin.playerMap.get(p).getPlayerChests().get(p).equals(e.getInventory())){
-			((Cancellable) e).setCancelled(true);
-		}
-	}
-	public void onChestOpen(InventoryOpenEvent e){
-		
-	}
+	
+	
 }

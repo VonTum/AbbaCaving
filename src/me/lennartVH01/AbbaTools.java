@@ -32,7 +32,9 @@ public class AbbaTools {
 	}
 	public static boolean removeAbbaGame(String name){
 		for(int i = 0; i < games.size(); i++){
-			if(games.get(i).name.equalsIgnoreCase(name)){
+			AbbaGame game = games.get(i);
+			if(game.name.equalsIgnoreCase(name)){
+				game.destroy();
 				games.remove(i);
 				return true;
 			}

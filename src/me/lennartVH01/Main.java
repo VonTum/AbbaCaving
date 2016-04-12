@@ -22,15 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class Main extends JavaPlugin{
 	
-	/*public static void main(String[] args){
-		ItemStack test = new ItemStack(Material.STONE);
-		
-		
-		
-		
-		System.out.println(test.serialize());
-		
-	}*/
+	
 	
 	
 	
@@ -38,7 +30,7 @@ public class Main extends JavaPlugin{
 	
 	public List<AbbaGame> ongoingGames = new ArrayList<AbbaGame>();
 	
-	public final String[] abbaSubCommands = new String[]{"calc", "close", "create", "info", "join", "leave", "list", "open", "reload", "remove"};
+	public final String[] abbaSubCommands = new String[]{"calc", "close", "config", "create", "info", "join", "leave", "list", "open", "reload", "remove", "start"};
 	
 	
 	public FileConfiguration config = this.getConfig();
@@ -52,18 +44,6 @@ public class Main extends JavaPlugin{
 		evtListener.initialize(this);
 		getServer().getPluginManager().registerEvents(evtListener, this);
 		
-		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-			
-			@Override
-			public void run() {
-				for(AbbaGame game:AbbaTools.getGames()){
-					if(game.isRunning() && System.currentTimeMillis() > game.endTime){
-						game.finishGame();
-					}
-				}
-				System.out.println("ding!");
-			}
-		}, 0, 20);
 		
 		
 		//Config
@@ -89,7 +69,7 @@ public class Main extends JavaPlugin{
 			valueItemPairs.add(new ValueItemPair(stack, value));
 		}
 		
-		AbbaTools.initialize(valueItemPairs);
+		AbbaTools.initialize(this, valueItemPairs);
 		
 		
 	}
@@ -315,7 +295,7 @@ public class Main extends JavaPlugin{
 						gameName += "_";
 					}
 					//create game
-					AbbaTools.create(gameName, gameSpawn, config.getInt("GameDuration"), config.getInt("PlayerCap"));
+					AbbaTools.create(gameName, gameSpawn);
 					sender.sendMessage("Successfully created game \"" + gameName + "\"");
 					return true;
 					
@@ -429,13 +409,18 @@ public class Main extends JavaPlugin{
 							return false;
 						}
 					}
-					if(game.isRunning()){
+					switch(game.getState()){
+					case WAITING:
+						game.start();
+						return true;
+					case PAUSED:
+						break;
+					case COUNTDOWN:  //countdown and running both do the same
+					case RUNNING:
 						sender.sendMessage("§cGame already running!");
 						return false;
-					}else{
-						game.start();
-						sender.sendMessage("Game started, " + game.duration + " seconds left!");
-						return true;
+					case FINISHED:
+						break;
 					}
 					
 				}else{
@@ -469,9 +454,8 @@ public class Main extends JavaPlugin{
 										sender.sendMessage("§cPlease specify a stricktly positive number");
 										return false;
 									}
-									if(game.isRunning()){
+									if(game.getState() == GameState.RUNNING || game.getState() == GameState.PAUSED){
 										game.setEndTime(System.currentTimeMillis() + newTime * 1000);
-										
 									}else{
 										game.setDuration(newTime);
 									}
@@ -515,20 +499,22 @@ public class Main extends JavaPlugin{
 	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args){
 		List<String> cmds = new ArrayList<String>();
 		if(command.getName().equalsIgnoreCase("abba")){
-			if(args.length == 0){
-				for(String s:abbaSubCommands){
-					if(sender.hasPermission("AbbaCaving." + s)){
-						cmds.add(s);
-					}
-				}
-			}else if(args.length == 1){
+			switch(args.length){
+			case 1:
 				for(String s:abbaSubCommands){
 					if(sender.hasPermission("AbbaCaving." + s) && s.startsWith(args[0])){
 						cmds.add(s);
 					}
 				}
-			}else{
+				break;
+			case 2:
+				for(AbbaGame game:AbbaTools.getGames()){
+					if(game.getName().startsWith(args[1])){
+						cmds.add(game.getName());
+					}
+				}
 			}
+			
 		}
 		return cmds;
 	}

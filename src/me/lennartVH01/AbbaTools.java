@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -11,18 +12,22 @@ import org.bukkit.inventory.ItemStack;
 
 
 public class AbbaTools {
+	public static Main plugin;
 	public static List<ValueItemPair> itemPairs;
 	public static List<AbbaGame> games = new ArrayList<AbbaGame>();
 	
-	public static void initialize(List<ValueItemPair> valueItemPairs) {
+	
+	public static void initialize(Main plugin, List<ValueItemPair> valueItemPairs) {
+		AbbaTools.plugin = plugin;
 		itemPairs = valueItemPairs;
 		
 	}
 	
 	
 	
-	public static void create(String name, Location spawn, int duration, int playerCap){
-		AbbaGame game = new AbbaGame(name, spawn, duration, playerCap);
+	public static void create(String name, Location spawn){
+		FileConfiguration config = plugin.getConfig();
+		AbbaGame game = new AbbaGame(plugin, name, spawn, config.getInt("GameDuration"), config.getInt("PlayerCap"), config.getInt("CountdownTime"));
 		games.add(game);
 	}
 	public static boolean removeAbbaGame(String name){

@@ -32,3 +32,24 @@ Command | Description | permission | default
 /abba remove | Removes an Abba game | AbbaCaving.remove | OP
 /abba open | Opens a game so people can join | AbbaCaving.open | OP
 /abba close | Closes a game so people can't join | AbbaCaving.close | OP
+/abba config | Configures an abba game | AbbaCaving.config | OP
+
+## Permissions
+Permission | Description | default
+--- | --- | ---
+AbbaCaving.join | /abba join | all
+AbbaCaving.leave | /abba leave | all
+AbbaCaving.info | /abba info | all
+AbbaCaving.list | /abba list | all
+AbbaCaving.calc | /abba calc | all
+AbbaCaving.joinFull | Allows to join full games | OP
+AbbaCaving.joinClosed | Allows to join closed games | OP
+AbbaCaving.create | /abba create | OP
+AbbaCaving.remove | /abba remove | OP
+AbbaCaving.open | /abba  open | OP
+AbbaCaving.close | /abba close | OP
+AbbaCaving.tp | /abba tp | OP
+AbbaCaving.start | /abba start | OP
+AbbaCaving.reload | /abba reload | OP
+AbbaCaving.config | /abba config | OP
+AbbaCaving.registerChest | Allows to register chests for an abba game

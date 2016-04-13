@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import me.lennartVH01.Listeners.EventListener;
+
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -44,6 +46,7 @@ public class Main extends JavaPlugin{
 	
 	public final String[] abbaSubCommands = new String[]{"calc", "close", "config", "create", "info", "join", "leave", "list", "open", "reload", "remove", "start"};
 	
+	public static Main plugin;
 	
 	public FileConfiguration config;
 	

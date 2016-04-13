@@ -21,10 +21,10 @@ import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class Main extends JavaPlugin{
 	
@@ -45,15 +45,18 @@ public class Main extends JavaPlugin{
 	public final String[] abbaSubCommands = new String[]{"calc", "close", "config", "create", "info", "join", "leave", "list", "open", "reload", "remove", "start"};
 	
 	
-	public FileConfiguration config = this.getConfig();
+	public FileConfiguration config;
 	
 	
 	public EventListener evtListener = new EventListener();
 	
 	@Override
 	public void onEnable(){
+		ConfigurationSerialization.registerClass(AbbaGame.class);
 		
 		
+		
+		config = this.getConfig();
 		// Event handler
 		evtListener.initialize(this);
 		getServer().getPluginManager().registerEvents(evtListener, this);
@@ -255,6 +258,26 @@ public class Main extends JavaPlugin{
 				
 				
 			//Admin commands
+			case "calcscores":
+				if(sender.hasPermission("AbbaCaving.calcScores")){
+					AbbaGame game;
+					if(args.length >= 2){
+						game = AbbaTools.getAbbaGame(args[1]);
+					}else{
+						game = AbbaTools.getAbbaGame();
+					}
+					if(game.getState() != GameState.FINISHED){
+						game.calcScores();
+						
+					}else{
+						sender.sendMessage("§cGame not finished yet!");
+						return false;
+					}
+				}else{
+					sender.sendMessage(Messages.noPermissionError);
+					return false;
+				}
+				break;
 			case "create":
 				if(args.length <= 5 && !(sender instanceof Player)){
 					System.out.println("Must be ingame or specify world and coordinates");

@@ -10,21 +10,17 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.material.TrapDoor;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
 
-public class AbbaGame {
+public class AbbaGame implements ConfigurationSerializable{
 	private Main plugin;
 	public int taskId;
 	public boolean open = false;
@@ -63,6 +59,7 @@ public class AbbaGame {
 		for(Sign s:signs){
 			s.setLine(0, "");
 			s.setLine(1, "");
+			s.setLine(2, "");
 			s.update();
 		}
 		for(Player p:players){
@@ -76,14 +73,30 @@ public class AbbaGame {
 	
 	public void start() {
 		// TODO Add stuff like tp people to cave if neccecary
-		endTime = System.currentTimeMillis() + 1000 * countDownTime;
-		state = GameState.COUNTDOWN;
-		
-		for(Player p:players){
-			p.sendMessage("§cGame starting!");
+		if(state == GameState.WAITING){
+			endTime = System.currentTimeMillis() + 1000 * countDownTime;
+			state = GameState.COUNTDOWN;
+			for(Player p:players){
+				p.sendMessage("§cGame starting!");
+			}
+		}else if(state == GameState.PAUSED){
+			endTime = System.currentTimeMillis() + 1000 * duration;
+			state = GameState.RUNNING;
+			for(Player p:players){
+				p.sendMessage("§cGame continuing!");
+			}
+			startClock(0);
 		}
 		
+		
+		
 		startClock(20);
+	}
+	public void pause(){
+		//TODO Implement pausing
+		stopClock();
+		state = GameState.PAUSED;
+		duration = (int) ((endTime - System.currentTimeMillis())/1000);
 	}
 	
 	
@@ -130,10 +143,7 @@ public class AbbaGame {
 							p.teleport(spawn);
 							
 							
-							Score score = abbaObjective.getScore(p.getName());
-							CalculatedScore stat = AbbaTools.calcScore(p.getInventory());
-							score.setScore(stat.getTotal());
-							endStats.put(p.getUniqueId(), stat);
+							
 						}
 						
 					}
@@ -149,6 +159,21 @@ public class AbbaGame {
 	}
 	private void stopClock(){
 		Bukkit.getScheduler().cancelTask(taskId);
+	}
+	
+	public void calcScores() {
+		for(UUID uuid:playerChests.keySet()){
+			Chest chest = playerChests.get(uuid);
+			Sign sign = signs.get(chests.indexOf(chest));
+			
+			Player p = plugin.getServer().getPlayer(uuid);
+			
+			Score score = abbaObjective.getScore(p.getName());
+			CalculatedScore stat = AbbaTools.calcScore(chest.getInventory());
+			score.setScore(stat.getTotal());
+			sign.setLine(2, "" + stat.getTotal());
+			endStats.put(p.getUniqueId(), stat);
+		}
 	}
 	
 	public void open(){
@@ -181,7 +206,11 @@ public class AbbaGame {
 		return players.size();
 	}
 	public int getMaxPlayers(){
-		return playerCap;
+		if(playerCap == -1 || chests.size() < playerCap){
+			return chests.size();
+		}else{
+			return playerCap;
+		}
 	}
 	public String getName(){
 		return name;
@@ -231,5 +260,20 @@ public class AbbaGame {
 		
 	}
 	
+	
+	
+	//TODO Make dis serializable
+	
+	@Override
+	public Map<String, Object> serialize() {
+		Map<String, Object> abbaMap = new HashMap<String, Object>();
+		abbaMap.put("spawn", spawn);
+		
+		
+		return abbaMap;
+	}
+	public AbbaGame deserialize(Map<String, Object> inputMap){
+		return null;
+	}
 	
 }

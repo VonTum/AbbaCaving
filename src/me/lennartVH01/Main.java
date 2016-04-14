@@ -10,8 +10,6 @@ import java.util.UUID;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import me.lennartVH01.Listeners.EventListener;
-
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -113,6 +111,10 @@ public class Main extends JavaPlugin{
 							game = AbbaTools.getAbbaGame(args[1]);
 						}else{
 							game = AbbaTools.getAbbaGame();
+						}
+						if(game == null){
+							sender.sendMessage("§cGame not found!");
+							return false;
 						}
 						if(!(game.isOpen() || p.hasPermission("AbbaCaving.joinClosed"))){
 							p.sendMessage("§cThis game is closed!");

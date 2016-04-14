@@ -2,6 +2,7 @@ package me.lennartVH01;
 
 
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -21,6 +22,16 @@ import org.bukkit.scoreboard.Scoreboard;
 
 
 public class AbbaGame implements ConfigurationSerializable{
+	private static Comparator<Tuple2<UUID, CalculatedScore>> scoreComparer = new Comparator<Tuple2<UUID, CalculatedScore>>() {
+
+		@Override
+		public int compare(Tuple2<UUID, CalculatedScore> arg0, Tuple2<UUID, CalculatedScore> arg1) {
+			return arg0.getArg2().getTotal() - arg1.getArg2().getTotal();
+		}
+		
+	};
+	
+	
 	private Main plugin;
 	public int taskId;
 	public boolean open = false;
@@ -32,7 +43,7 @@ public class AbbaGame implements ConfigurationSerializable{
 	public int countDownTime;
 	public int playerCap;
 	public List<Player> players;
-	public Map<UUID, CalculatedScore> endStats = new HashMap<UUID, CalculatedScore>();
+	public List<Tuple2<UUID, CalculatedScore>> endStats = new ArrayList<Tuple2<UUID, CalculatedScore>>();
 	public Map<UUID, Chest> playerChests = new HashMap<UUID, Chest>();
 	public List<Chest> chests = new ArrayList<Chest>();
 	public List<Sign> signs = new ArrayList<Sign>();
@@ -172,8 +183,12 @@ public class AbbaGame implements ConfigurationSerializable{
 			CalculatedScore stat = AbbaTools.calcScore(chest.getInventory());
 			score.setScore(stat.getTotal());
 			sign.setLine(2, "" + stat.getTotal());
-			endStats.put(p.getUniqueId(), stat);
+			endStats.add(new Tuple2<UUID, CalculatedScore>(p.getUniqueId(), stat));
+			
+			
 		}
+		endStats.sort(scoreComparer);
+		
 	}
 	
 	public void open(){

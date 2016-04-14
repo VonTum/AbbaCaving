@@ -1,7 +1,4 @@
-package me.lennartVH01.Listeners;
-
-import me.lennartVH01.AbbaGame;
-import me.lennartVH01.Main;
+package me.lennartVH01;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

@@ -15,6 +15,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
@@ -45,6 +46,7 @@ public class AbbaGame implements ConfigurationSerializable{
 	public List<Player> players;
 	public List<Tuple2<UUID, CalculatedScore>> endStats = new ArrayList<Tuple2<UUID, CalculatedScore>>();
 	public Map<UUID, Chest> playerChests = new HashMap<UUID, Chest>();
+	public List<ItemStack> collectedItems = new ArrayList<ItemStack>();
 	public List<Chest> chests = new ArrayList<Chest>();
 	public List<Sign> signs = new ArrayList<Sign>();
 	private Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
@@ -65,12 +67,18 @@ public class AbbaGame implements ConfigurationSerializable{
 			players = new ArrayList<Player>(playerCap);
 		}
 		abbaObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
+		
+		for(ValueItemPair pair:AbbaTools.itemPairs){
+			ItemStack stack = pair.getItemStack().clone();
+			stack.setAmount(0);
+			collectedItems.add(stack);
+		}
 	}
 	public void destroy(){
 		for(Sign s:signs){
 			s.setLine(0, "");
-			s.setLine(1, "");
-			s.setLine(2, "");
+			//s.setLine(1, "");
+			//s.setLine(2, "");
 			s.update();
 		}
 		for(Player p:players){
@@ -185,7 +193,17 @@ public class AbbaGame implements ConfigurationSerializable{
 			sign.setLine(2, "" + stat.getTotal());
 			endStats.add(new Tuple2<UUID, CalculatedScore>(p.getUniqueId(), stat));
 			
+			ItemStack[] stacks = chest.getInventory().getStorageContents();
 			
+			for(ItemStack item:stacks){
+				for(ItemStack total:collectedItems){
+					if(total.isSimilar(item)){
+						total.setAmount(total.getAmount() + item.getAmount());
+						chest.getInventory().remove(item);
+						continue;
+					}
+				}
+			}
 		}
 		endStats.sort(scoreComparer);
 		

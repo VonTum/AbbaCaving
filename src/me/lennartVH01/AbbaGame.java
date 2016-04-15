@@ -15,6 +15,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -207,6 +208,21 @@ public class AbbaGame implements ConfigurationSerializable{
 		}
 		endStats.sort(scoreComparer);
 		
+		List<Integer> LeaderBoardWeights = plugin.getConfig().getIntegerList("WinWeights.Top");
+		int AllPlayerWeight = plugin.getConfig().getInt("WinWeights.All");
+		int total = AllPlayerWeight;
+		for(int weight:LeaderBoardWeights){
+			total += weight;
+		}
+		
+		for(int i = 0; i < LeaderBoardWeights.size(); i++){
+			Inventory chestInv = playerChests.get(endStats.get(0).arg1).getInventory();
+			for(ItemStack stack: collectedItems){
+				
+			}
+			
+			
+		}
 	}
 	
 	public void open(){

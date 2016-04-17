@@ -1,10 +1,6 @@
 package me.lennartVH01;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import org.bukkit.inventory.ItemStack;
 
 
 public class ItemUtils {
@@ -21,23 +17,23 @@ public class ItemUtils {
 		}
 		return true;
 	}
-	public static ItemStack[] getItemStacks(ItemStack item){
-		return getItemStacks(item, item.getAmount());
+	/*public static ItemStack[] takeOffItems(ItemStack item){
+		return takeOffItems(item, item.getAmount());
 	}
-	public static ItemStack[] getItemStacks(ItemStack item, int maxTakeOff){
-		ItemStack[] stacks = new ItemStack[(maxTakeOff+63) / 64]; //take ceil of itemStack size/64
+	public static ItemStack[] takeOffItems(ItemStack item, int maxTakeOff){
+		ItemStack[] stacks = new ItemStack[(maxTakeOff+item.getMaxStackSize()-1) / item.getMaxStackSize()]; //take ceil of itemStack size/64
 		
 		item.setAmount(item.getAmount() - maxTakeOff);
-		for(int i = 0; i < maxTakeOff / 64; i++){
+		for(int i = 0; i < maxTakeOff / item.getMaxStackSize(); i++){
 			stacks[i] = item.clone();
-			stacks[i].setAmount(64);
+			stacks[i].setAmount(item.getMaxStackSize());
 		}
-		int remainder = maxTakeOff % 64;
+		int remainder = maxTakeOff % item.getMaxStackSize();
 		if(remainder != 0){
 			stacks[stacks.length] = item.clone();
 			stacks[stacks.length].setAmount(remainder);
 			
 		}
 		return stacks;
-	}
+	}*/
 }

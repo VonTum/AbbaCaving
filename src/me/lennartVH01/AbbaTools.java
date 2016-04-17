@@ -1,19 +1,31 @@
 package me.lennartVH01;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import me.lennartVH01.AbbaGame.JoinResult;
 
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 
 
-public class AbbaTools {
+public class AbbaTools{
 	public static Main plugin;
 	public static List<ValueItemPair> itemPairs;
 	public static List<AbbaGame> games = new ArrayList<AbbaGame>();
+	
+	public static Map<UUID, AbbaGame> playerGameMap = new HashMap<UUID, AbbaGame>();
+	
 	
 	
 	public static void initialize(Main plugin, List<ValueItemPair> valueItemPairs) {
@@ -26,19 +38,25 @@ public class AbbaTools {
 	
 	public static void create(String name, Location spawn){
 		FileConfiguration config = plugin.getConfig();
-		AbbaGame game = new AbbaGame(plugin, name, spawn, config.getInt("GameDuration"), config.getInt("PlayerCap"), config.getInt("CountdownTime"));
+		AbbaGame game = new AbbaGame(name, spawn, config.getInt("GameDuration"), config.getInt("PlayerCap"));
 		games.add(game);
 	}
 	public static boolean removeAbbaGame(String name){
-		for(int i = 0; i < games.size(); i++){
-			AbbaGame game = games.get(i);
-			if(game.name.equalsIgnoreCase(name)){
-				game.destroy();
-				games.remove(i);
-				return true;
-			}
+		AbbaGame game = getAbbaGame(name);
+		return removeAbbaGame(game);
+	}
+		
+	public static boolean removeAbbaGame(AbbaGame game){
+		if(game == null){
+			return false;
 		}
-		return false;
+		
+		for(UUID id:game.getPlayerIDs()){
+			playerGameMap.remove(id);// remove people from game Map
+		}
+		game.destroy();				// remove people from internal game Map
+		games.remove(game);
+		return true;
 	}
 	public static AbbaGame getAbbaGame(String name){
 		for(AbbaGame game:games){
@@ -56,6 +74,33 @@ public class AbbaTools {
 			return null;
 		}
 	}
+	public static AbbaGame getAbbaGame(Player p){
+		return playerGameMap.get(p.getUniqueId());
+	}
+	
+	public static AbbaGame leave(UUID id){
+		AbbaGame game = playerGameMap.remove(plugin.getServer().getPlayer(id).getUniqueId());
+		if(game != null){
+			game.removePlayer(id);
+			return game;
+		}
+		return null;
+	}
+	public static AbbaGame.JoinResult join(Player p, AbbaGame game){
+		leave(p.getUniqueId());
+		
+		JoinResult result = game.addPlayer(p);
+		if(result == JoinResult.SUCCESS){
+			playerGameMap.put(p.getUniqueId(), game);
+		}
+		return result;
+		
+	}
+	public static boolean isInGame(Player p){
+		return playerGameMap.containsKey(p.getUniqueId());
+	}
+	
+	
 	public static ItemStack[] getContraband(Inventory i){
 		return null;
 	}
@@ -84,5 +129,23 @@ public class AbbaTools {
 	}
 
 
+
+	public static List<Map<String, Object>> serialize() {
+		List<Map<String, Object>> serializedGames = new ArrayList<Map<String, Object>>();
+		for(AbbaGame game:games){
+			serializedGames.add(game.serialize());
+		}
+		return serializedGames;
+	}
+	public static void deserialize(List<AbbaGame> gameList){
+		playerGameMap = new HashMap<UUID, AbbaGame>();
+		for(AbbaGame game:gameList){
+			games.add(game);
+			for(UUID id:game.getPlayerIDs()){
+				playerGameMap.put(id, game);
+			}
+		}
+	}
+	
 	
 }

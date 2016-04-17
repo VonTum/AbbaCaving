@@ -2,11 +2,12 @@ package me.lennartVH01;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
+import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -21,6 +22,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -38,8 +40,6 @@ public class Main extends JavaPlugin{
 	
 	
 	
-	public Map<UUID, AbbaGame> playerMap = new HashMap<UUID, AbbaGame>();
-	
 	public List<AbbaGame> ongoingGames = new ArrayList<AbbaGame>();
 	
 	public final String[] abbaSubCommands = new String[]{"calc", "close", "config", "create", "info", "join", "leave", "list", "open", "reload", "remove", "start"};
@@ -51,15 +51,16 @@ public class Main extends JavaPlugin{
 	
 	public EventListener evtListener = new EventListener();
 	
+	
 	@Override
 	public void onEnable(){
+		evtListener.initialize(this);
+		AbbaGame.initialize(this);
 		ConfigurationSerialization.registerClass(AbbaGame.class);
-		
-		
 		
 		config = this.getConfig();
 		// Event handler
-		evtListener.initialize(this);
+		
 		getServer().getPluginManager().registerEvents(evtListener, this);
 		
 		
@@ -88,11 +89,26 @@ public class Main extends JavaPlugin{
 		
 		AbbaTools.initialize(this, valueItemPairs);
 		
-		
+		FileConfiguration persist = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "persist.yml"));
+		@SuppressWarnings("unchecked")
+		List<AbbaGame> abbaList = (List<AbbaGame>) persist.getList("Games");
+		AbbaTools.deserialize((List<AbbaGame>) abbaList); 
 	}
 	@Override
 	public void onDisable(){
+		File persistFile = new File(getDataFolder(), "persist.yml");
 		
+		
+		FileConfiguration persist = new YamlConfiguration();
+		
+		persist.set("Games", AbbaTools.getGames());
+		
+		
+		try{
+			persist.save(persistFile);
+		}catch(IOException e){
+			System.out.println("[ERROR] Could not save to persist.yml! Reason:" + e.getMessage());
+		}
 	}
 	
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args){
@@ -133,19 +149,14 @@ public class Main extends JavaPlugin{
 							}
 						}
 						
-						AbbaGame oldGame = playerMap.get(p.getUniqueId());
+						AbbaGame oldGame = AbbaTools.getAbbaGame(p);
 						if(oldGame != null){
-							if(p.hasPermission("AbbaCaving.leave")){
-								oldGame.removePlayer(p);
-								playerMap.remove(p.getUniqueId());
-								p.sendMessage("Left game \"" + oldGame.getName() + "\"");
-							}else{
-								p.sendMessage("§cYou don't have permission to leave the current game!");
-							}
+							
+							p.sendMessage("Left game \"" + oldGame.getName() + "\"");
+							
 						}
 						
-						game.addPlayer(p);
-						playerMap.put(p.getUniqueId(), game);
+						AbbaTools.join(p, game);
 						p.sendMessage("Joined game \"" + game.getName() + "\"");
 						
 						p.teleport(game.getSpawn());
@@ -166,11 +177,14 @@ public class Main extends JavaPlugin{
 				if(sender instanceof Player){
 					if(sender.hasPermission("AbbaCaving.leave")){
 						Player p = (Player) sender;
-						AbbaGame game = playerMap.get(p.getUniqueId());
-						game.removePlayer(p);
-						playerMap.remove(p.getUniqueId());
-						p.sendMessage("Left game \"" + game.getName() + "\"");
-						return true;
+						AbbaGame game = AbbaTools.leave(p.getUniqueId());
+						if(game != null){
+							p.sendMessage("Left game \"" + game.getName() + "\"");
+							return true;
+						}else{
+							p.sendMessage("§cYou aren't in a game right now!");
+							return false;
+						}
 					}else{
 						sender.sendMessage(Messages.noPermissionError);
 						return false;
@@ -271,7 +285,7 @@ public class Main extends JavaPlugin{
 					}else{
 						game = AbbaTools.getAbbaGame();
 					}
-					if(game.getState() != GameState.FINISHED){
+					if(game.getState() == AbbaGame.GameState.FINISHED){
 						game.calcScores();
 						
 					}else{
@@ -461,6 +475,7 @@ public class Main extends JavaPlugin{
 						sender.sendMessage("§cGame already running!");
 						return false;
 					case FINISHED:
+					case CONCLUDED:
 						break;
 					}
 					
@@ -495,7 +510,7 @@ public class Main extends JavaPlugin{
 										sender.sendMessage("§cPlease specify a stricktly positive number");
 										return false;
 									}
-									if(game.getState() == GameState.RUNNING || game.getState() == GameState.PAUSED){
+									if(game.getState() == AbbaGame.GameState.RUNNING || game.getState() == AbbaGame.GameState.PAUSED){
 										game.setEndTime(System.currentTimeMillis() + newTime * 1000);
 									}else{
 										game.setDuration(newTime);
@@ -509,20 +524,19 @@ public class Main extends JavaPlugin{
 								}
 							case "addchest":
 								if(sender instanceof Player){
-									Block blockInFront = ((Player) sender).getTargetBlock(transparentBlocks, 5);
-									if(blockInFront.getState() instanceof Chest){
-										for(BlockFace face:new BlockFace[]{BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST}){
-											Block blockNextTo = blockInFront.getRelative(face);
-											if(blockNextTo.getState() instanceof Sign){
-												if(AbbaTools.getAbbaGame(args[1]).addChest((Chest) blockInFront.getState(), (Sign) blockNextTo.getState())){
-													sender.sendMessage("Chest created");
-													return true;
-												}else{
-													sender.sendMessage("§cChest already in a game!");
-													return false;
-												}
+									Block blockInFront = ((Player) sender).getTargetBlock((Set<Material>) null, 5);
+									if(BlockUtils.isSign(blockInFront)){
+										Block blockNextTo = BlockUtils.getAttachedBlock(blockInFront);
+										if(BlockUtils.isChest(blockNextTo)){
+											if(AbbaTools.getAbbaGame(args[1]).addChest((Chest) blockNextTo.getState(), (Sign) blockInFront.getState())){
+												sender.sendMessage("Chest created");
+												return true;
+											}else{
+												sender.sendMessage("§cChest already in a game!");
+												return false;
 											}
 										}
+										
 										
 										sender.sendMessage("§cPut a sign next to the chest!");
 										return false;
@@ -577,7 +591,7 @@ public class Main extends JavaPlugin{
 				break;
 			case 2:
 				for(AbbaGame game:AbbaTools.getGames()){
-					if(game.getName().startsWith(args[1])){
+					if(game.getName().toLowerCase().startsWith(args[1].toLowerCase())){
 						cmds.add(game.getName());
 					}
 				}

@@ -12,10 +12,7 @@ public class EventListener implements Listener{
 	}
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e){
-		AbbaGame game = plugin.playerMap.remove(e.getPlayer().getUniqueId());
-		if(game != null){
-			game.removePlayer(e.getPlayer());
-		}
+		AbbaTools.leave(e.getPlayer().getUniqueId());
 	}
 	
 	

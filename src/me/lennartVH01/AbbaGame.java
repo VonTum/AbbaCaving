@@ -28,13 +28,13 @@ public class AbbaGame implements ConfigurationSerializable{
 
 		@Override
 		public int compare(Tuple2<UUID, CalculatedScore> arg0, Tuple2<UUID, CalculatedScore> arg1) {
-			return arg0.getArg2().getTotal() - arg1.getArg2().getTotal();
+			return arg1.getArg2().getTotal() - arg0.getArg2().getTotal();
 		}
 		
 	};
 	
 	
-	private Main plugin;
+	private static Main plugin;
 	public int taskId;
 	public boolean open = false;
 	public GameState state = GameState.WAITING;
@@ -42,11 +42,11 @@ public class AbbaGame implements ConfigurationSerializable{
 	public Location spawn;
 	public long endTime;
 	public int duration;
-	public int countDownTime;
 	public int playerCap;
-	public List<Player> players;
+	public List<UUID> players;
 	public List<Tuple2<UUID, CalculatedScore>> endStats = new ArrayList<Tuple2<UUID, CalculatedScore>>();
 	public Map<UUID, Chest> playerChests = new HashMap<UUID, Chest>();
+	public Map<UUID, List<ItemStack>> leftovers = new HashMap<UUID, List<ItemStack>>();
 	public List<ItemStack> collectedItems = new ArrayList<ItemStack>();
 	public List<Chest> chests = new ArrayList<Chest>();
 	public List<Sign> signs = new ArrayList<Sign>();
@@ -54,18 +54,18 @@ public class AbbaGame implements ConfigurationSerializable{
 	private Objective abbaObjective = scoreboard.registerNewObjective("AbbaStats", "dummy");
 	private Score timer = abbaObjective.getScore("Time Remaining");
 	
-	
-	public AbbaGame(Main plugin, String name, Location spawn, int duration, int playerCap, int countDownTime){
-		this.plugin = plugin;
+	public static void initialize(Main plugin){
+		AbbaGame.plugin = plugin;
+	}
+	public AbbaGame(String name, Location spawn, int duration, int playerCap){
 		this.name = name;
 		this.spawn = spawn;
 		this.duration = duration;
 		this.playerCap = playerCap;
-		this.countDownTime = countDownTime;
 		if(playerCap == -1){
-			players = new ArrayList<Player>();
+			players = new ArrayList<UUID>();
 		}else{
-			players = new ArrayList<Player>(playerCap);
+			players = new ArrayList<UUID>(playerCap);
 		}
 		abbaObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		
@@ -75,6 +75,8 @@ public class AbbaGame implements ConfigurationSerializable{
 			collectedItems.add(stack);
 		}
 	}
+	
+	
 	public void destroy(){
 		for(Sign s:signs){
 			s.setLine(0, "");
@@ -82,28 +84,28 @@ public class AbbaGame implements ConfigurationSerializable{
 			//s.setLine(2, "");
 			s.update();
 		}
-		for(Player p:players){
-			plugin.playerMap.remove(p.getUniqueId());
-			p.sendMessage("§cGame ended!");
-			
+		for(int i = players.size() - 1; i >= 0; i--){	//loop array backwards for speed
+			removePlayer(players.get(i));
 			//probably tp people to spawn or something
 			
 		}
+		stopClock();
 	}
 	
 	public void start() {
 		// TODO Add stuff like tp people to cave if neccecary
 		if(state == GameState.WAITING){
-			endTime = System.currentTimeMillis() + 1000 * countDownTime;
+			endTime = System.currentTimeMillis() + 5000;
 			state = GameState.COUNTDOWN;
-			for(Player p:players){
+			for(UUID id:players){
+				Player p = plugin.getServer().getPlayer(id);
 				p.sendMessage("§cGame starting!");
 			}
 		}else if(state == GameState.PAUSED){
 			endTime = System.currentTimeMillis() + 1000 * duration;
 			state = GameState.RUNNING;
-			for(Player p:players){
-				p.sendMessage("§cGame continuing!");
+			for(UUID id:players){
+				plugin.getServer().getPlayer(id).sendMessage("§cGame continuing!");
 			}
 			startClock(0);
 		}
@@ -127,12 +129,13 @@ public class AbbaGame implements ConfigurationSerializable{
 			public void run() {
 				switch(state){
 				case COUNTDOWN:
-					if(endTime - System.currentTimeMillis() <= 0){
+					if((endTime - System.currentTimeMillis())/1000 <= 0){
 						state = GameState.RUNNING;
 						endTime = System.currentTimeMillis() + duration * 1000;
 						timer.setScore(duration);
 						
-						for(Player p:players){
+						for(UUID id:players){
+							Player p = plugin.getServer().getPlayer(id);
 							p.sendMessage("§cGOGOGO!");
 							p.setScoreboard(scoreboard);
 						}
@@ -140,8 +143,8 @@ public class AbbaGame implements ConfigurationSerializable{
 						
 					}else{
 						String message = "§c" + (endTime - System.currentTimeMillis())/1000;
-						for(Player p:players){
-							p.sendMessage(message);
+						for(UUID id:players){
+							plugin.getServer().getPlayer(id).sendMessage(message);
 						}
 					}
 					
@@ -158,7 +161,8 @@ public class AbbaGame implements ConfigurationSerializable{
 						state = GameState.FINISHED;
 						scoreboard.resetScores("Time Remaining");
 						
-						for(Player p:players){
+						for(UUID id:players){
+							Player p = plugin.getServer().getPlayer(id);
 							p.sendMessage("Game ended!");
 							p.teleport(spawn);
 							
@@ -210,18 +214,48 @@ public class AbbaGame implements ConfigurationSerializable{
 		
 		List<Integer> LeaderBoardWeights = plugin.getConfig().getIntegerList("WinWeights.Top");
 		int AllPlayerWeight = plugin.getConfig().getInt("WinWeights.All");
-		int total = AllPlayerWeight;
-		for(int weight:LeaderBoardWeights){
-			total += weight;
+		int totalWeight = 0;
+		for(int i = 0; i < Math.min(LeaderBoardWeights.size(), playerChests.size()); i++){
+			totalWeight += LeaderBoardWeights.get(i);
+		}
+		if(playerChests.size() > LeaderBoardWeights.size()){
+			totalWeight += (playerChests.size() - LeaderBoardWeights.size()) * AllPlayerWeight;
 		}
 		
-		for(int i = 0; i < LeaderBoardWeights.size(); i++){
-			Inventory chestInv = playerChests.get(endStats.get(0).arg1).getInventory();
+		for(int i = 0; i < Math.min(LeaderBoardWeights.size(), playerChests.size()); i++){
+			Inventory chestInv = playerChests.get(endStats.get(i).arg1).getInventory();
+			List<ItemStack> leftoverList = new ArrayList<ItemStack>();
+			leftovers.put(endStats.get(i).arg1, leftoverList);
 			for(ItemStack stack: collectedItems){
+				ItemStack newStack = stack.clone();
+				newStack.setAmount((int) Math.ceil(stack.getAmount() * LeaderBoardWeights.get(i) / totalWeight));
+				stack.setAmount(stack.getAmount() - newStack.getAmount());
+				
+				if(newStack.getAmount() != 0){
+					leftoverList.addAll(chestInv.addItem(newStack).values());
+				}
+				
+				
 				
 			}
+			totalWeight -= LeaderBoardWeights.get(i);
 			
-			
+		}
+		for(int i = LeaderBoardWeights.size(); i < playerChests.size(); i++){
+			Inventory chestInv = playerChests.get(endStats.get(i).arg1).getInventory();
+			List<ItemStack> leftoverList = new ArrayList<ItemStack>();
+			leftovers.put(endStats.get(i).arg1, leftoverList);
+			for(ItemStack stack: collectedItems){
+				int newAmount = (int) (stack.getAmount() / (playerChests.size() - LeaderBoardWeights.size()));
+				int left = stack.getAmount() % (playerChests.size() - LeaderBoardWeights.size());
+				if(i - LeaderBoardWeights.size() < left){
+					newAmount++;
+				}
+				ItemStack newStack = stack.clone();
+				newStack.setAmount(newAmount);
+				
+				leftoverList.addAll(chestInv.addItem(newStack).values());
+			}
 		}
 	}
 	
@@ -267,9 +301,20 @@ public class AbbaGame implements ConfigurationSerializable{
 	public Location getSpawn(){
 		return spawn;
 	}
-
-	public void addPlayer(Player p) {
-		players.add(p);
+	public JoinResult addPlayer(Player p){
+		if(!Permission.hasPermission(p, Permission.JOIN_FULL) && players.size() >= playerCap){
+			return JoinResult.FAIL_FULL;
+		}
+		if(players.size() >= chests.size()){
+			return JoinResult.FAIL_NOCHEST;
+		}
+		if(!open && !Permission.hasPermission(p, Permission.JOIN_CLOSED)){
+			return JoinResult.FAIL_CLOSED;
+		}
+		//TODO Add stuff here for whitelist aswell
+		
+		
+		players.add(p.getUniqueId());
 		int index = playerChests.size();
 		Chest chest = chests.get(index);
 		Sign sign = signs.get(index);
@@ -277,13 +322,14 @@ public class AbbaGame implements ConfigurationSerializable{
 		sign.update();
 		playerChests.put(p.getUniqueId(), chest);
 		
-		
+		return JoinResult.SUCCESS;
 	}
-	public void removePlayer(Player p) {
-		players.remove(p);
+	public void removePlayer(UUID id) {
+		players.remove(id);
+		Player p = plugin.getServer().getPlayer(id);
+		p.setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
 		int index = chests.indexOf(playerChests.remove(p.getUniqueId()));
-		chests.remove(index);
-		Sign sign = signs.remove(index);
+		Sign sign = signs.get(index);
 		sign.setLine(1, "");
 		sign.update();
 	}
@@ -309,20 +355,82 @@ public class AbbaGame implements ConfigurationSerializable{
 		
 	}
 	
-	
+	// ==SERIALIZATION==
 	
 	//TODO Make dis serializable
 	
 	@Override
 	public Map<String, Object> serialize() {
 		Map<String, Object> abbaMap = new HashMap<String, Object>();
-		abbaMap.put("spawn", spawn);
+		abbaMap.put("Name", name);
+		abbaMap.put("Spawn", spawn);
+		
+		abbaMap.put("Open", open);
+		switch(state){
+		case WAITING:
+		case COUNTDOWN:
+			abbaMap.put("State", "WAITING");
+			break;
+		case RUNNING:
+		case PAUSED:
+			abbaMap.put("State", "PAUSED");
+			break;
+		case FINISHED:
+			abbaMap.put("State", "FINISHED");
+			break;
+		case CONCLUDED:
+			abbaMap.put("State", "CONCLUDED");
+			break;
+		}
+		
+		abbaMap.put("Duration", duration);
+		abbaMap.put("PlayerCap", playerCap);
 		
 		
 		return abbaMap;
 	}
-	public AbbaGame deserialize(Map<String, Object> inputMap){
-		return null;
+	public static AbbaGame deserialize(Map<String, Object> inputMap){
+		AbbaGame game = new AbbaGame((String) inputMap.get("Name"), (Location) inputMap.get("Spawn"), (int) inputMap.get("Duration"), (int) inputMap.get("PlayerCap"));
+		
+		switch((String) inputMap.get("State")){
+		
+		case "PAUSED":
+			game.state = GameState.PAUSED;
+			break;
+		case "FINISHED":
+			game.state = GameState.FINISHED;
+			break;
+		case "CONCLUDED":
+			game.state = GameState.CONCLUDED;
+			break;
+		default:	// WAITING also refers back to this state
+			game.state = GameState.WAITING;
+		}
+		
+		
+		
+		
+		return game;
+	}
+	public List<UUID> getPlayerIDs() {
+		return players;
 	}
 	
+	public enum JoinResult{
+		SUCCESS,
+		FAIL_FULL,
+		FAIL_CLOSED,
+		FAIL_WHITELIST,
+		FAIL_NOCHEST,
+		
+	}
+	public enum GameState {
+		WAITING, 
+		COUNTDOWN,
+		RUNNING, 
+		PAUSED, 
+		FINISHED,
+		CONCLUDED
+		
+	}
 }

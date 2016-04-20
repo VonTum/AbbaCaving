@@ -5,50 +5,28 @@ description: Abba Caving Management Plugin
 author: lennartVH01
 commands:
   abba:
+    aliases: [ab, abbacaving]
     description: Abba hub command
+    permission: AbbaCaving.player
+    permission-message: You don't have permission to use this command!
+  abbaadmin:
+    aliases: [aba, abbaa]
+    description: Abba Admin Command
+    permission: AbbaCaving.admin
+    permission-message: You don't have permission to use this command!
 permissions:
-  AbbaCaving.player.*:
-    description: Gives access to all commands for players
-    children:
-      AbbaCaving.join: true
-      AbbaCaving.leave: true
-      AbbaCaving.info: true
-      AbbaCaving.list: true
-      AbbaCaving.calc: true
-  AbbaCaving.admin.*:
-    AbbaCaving.create: true
-    AbbaCaving.remove: true
-    AbbaCaving.reload: true
-    AbbaCaving.open: true
-    AbbaCaving.close: true
-    AbbaCaving.start: true
-  AbbaCaving.join:
+  AbbaCaving.player:
+    description: Gives access to basic commands
     default: true
-  AbbaCaving.leave:
-    default: true
-  AbbaCaving.info:
-    default: true
-  AbbaCaving.list:
-    default: true
-  AbbaCaving.calc:
-    default: true
+  AbbaCaving.admin:
+    description: Gives access to admin commands
+    default: op
   AbbaCaving.joinFull:
-    default: op
-  AbbaCaving.create:
-    default: op
-  AbbaCaving.remove:
-    default: op
-  AbbaCaving.open:
-    default: op
-  AbbaCaving.close:
-    default: op
-  AbbaCaving.tp:
-    default: op
-  AbbaCaving.start:
-    default: op
-  AbbaCaving.reload:
-    default: op
-  AbbaCaving.config:
+    description: Allows to join full games
     default: op
   AbbaCaving.registerChest:
+    description: Allows registering of chests to an Abba Game
+    default: op
+  AbbaCaving.allowContraband:
+    description: Users with this permission will not be scanned for contraband
     default: op

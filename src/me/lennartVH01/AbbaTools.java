@@ -2,7 +2,6 @@ package me.lennartVH01;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -10,10 +9,11 @@ import java.util.UUID;
 import me.lennartVH01.AbbaGame.JoinResult;
 
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -22,9 +22,10 @@ import org.bukkit.inventory.ItemStack;
 public class AbbaTools{
 	public static Main plugin;
 	public static List<ValueItemPair> itemPairs;
-	public static List<AbbaGame> games = new ArrayList<AbbaGame>();
+	private static List<AbbaGame> games = new ArrayList<AbbaGame>();
 	
-	public static Map<UUID, AbbaGame> playerGameMap = new HashMap<UUID, AbbaGame>();
+	private static Map<UUID, AbbaGame> playerGameMap = new HashMap<UUID, AbbaGame>();
+	//private static Map<Location, AbbaGame> chestGameMap = new HashMap<Location, AbbaGame>();
 	
 	
 	
@@ -127,25 +128,26 @@ public class AbbaTools{
 	public static List<AbbaGame> getGames() {
 		return games;
 	}
-
-
-
-	public static List<Map<String, Object>> serialize() {
-		List<Map<String, Object>> serializedGames = new ArrayList<Map<String, Object>>();
-		for(AbbaGame game:games){
-			serializedGames.add(game.serialize());
-		}
-		return serializedGames;
+	public static void onChestOpen(InventoryOpenEvent e){
+		
 	}
+	public static void onSignBreak(BlockBreakEvent e){
+		
+	}
+	public static void onSignPlace(SignChangeEvent e){
+		
+	}
+	
+	
 	public static void deserialize(List<AbbaGame> gameList){
-		playerGameMap = new HashMap<UUID, AbbaGame>();
+		games = gameList;
 		for(AbbaGame game:gameList){
-			games.add(game);
 			for(UUID id:game.getPlayerIDs()){
 				playerGameMap.put(id, game);
 			}
 		}
 	}
+	
 	
 	
 }

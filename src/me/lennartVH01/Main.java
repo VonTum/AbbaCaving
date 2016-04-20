@@ -16,7 +16,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
@@ -398,7 +397,7 @@ public class Main extends JavaPlugin{
 							return false;
 						}
 					}
-					game.open();
+					game.setOpen(true);
 					sender.sendMessage("Opened game \"" + args[1] + "\"");
 					return true;
 				}else{
@@ -424,7 +423,7 @@ public class Main extends JavaPlugin{
 							return false;
 						}
 					}
-					game.close();
+					game.setOpen(false);
 					sender.sendMessage("Closed game \"" + args[1] + "\"");
 					return true;
 				}else{

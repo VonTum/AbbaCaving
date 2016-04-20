@@ -2,6 +2,7 @@ package me.lennartVH01;
 
 
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +24,7 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
+
 
 
 public class AbbaGame implements ConfigurationSerializable{
@@ -45,11 +49,13 @@ public class AbbaGame implements ConfigurationSerializable{
 	public int playerCap;
 	public List<UUID> players;
 	public List<Tuple2<UUID, CalculatedScore>> endStats = new ArrayList<Tuple2<UUID, CalculatedScore>>();
-	public Map<UUID, Chest> playerChests = new HashMap<UUID, Chest>();
+	
+	AbbaChestPlayerList chestList;
+	
+	
 	public Map<UUID, List<ItemStack>> leftovers = new HashMap<UUID, List<ItemStack>>();
 	public List<ItemStack> collectedItems = new ArrayList<ItemStack>();
-	public List<Chest> chests = new ArrayList<Chest>();
-	public List<Sign> signs = new ArrayList<Sign>();
+	
 	private Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 	private Objective abbaObjective = scoreboard.registerNewObjective("AbbaStats", "dummy");
 	private Score timer = abbaObjective.getScore("Time Remaining");
@@ -69,6 +75,8 @@ public class AbbaGame implements ConfigurationSerializable{
 		}
 		abbaObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		
+		chestList = new AbbaChestPlayerList(playerCap);
+		
 		for(ValueItemPair pair:AbbaTools.itemPairs){
 			ItemStack stack = pair.getItemStack().clone();
 			stack.setAmount(0);
@@ -78,7 +86,8 @@ public class AbbaGame implements ConfigurationSerializable{
 	
 	
 	public void destroy(){
-		for(Sign s:signs){
+		for(AbbaChest chestSignPair:chestList.getChests()){
+			Sign s = chestSignPair.getSign();
 			s.setLine(0, "");
 			//s.setLine(1, "");
 			//s.setLine(2, "");
@@ -186,11 +195,13 @@ public class AbbaGame implements ConfigurationSerializable{
 	}
 	
 	public void calcScores() {
-		for(UUID uuid:playerChests.keySet()){
-			Chest chest = playerChests.get(uuid);
-			Sign sign = signs.get(chests.indexOf(chest));
+		for(AbbaChest abbaChest:chestList.getOccupiedChests()){
+			UUID id = abbaChest.getOwnerId();
 			
-			Player p = plugin.getServer().getPlayer(uuid);
+			Chest chest = abbaChest.getChest();
+			Sign sign = abbaChest.getSign();
+			
+			Player p = plugin.getServer().getPlayer(id);
 			
 			Score score = abbaObjective.getScore(p.getName());
 			CalculatedScore stat = AbbaTools.calcScore(chest.getInventory());
@@ -215,15 +226,16 @@ public class AbbaGame implements ConfigurationSerializable{
 		List<Integer> LeaderBoardWeights = plugin.getConfig().getIntegerList("WinWeights.Top");
 		int AllPlayerWeight = plugin.getConfig().getInt("WinWeights.All");
 		int totalWeight = 0;
-		for(int i = 0; i < Math.min(LeaderBoardWeights.size(), playerChests.size()); i++){
+		for(int i = 0; i < Math.min(LeaderBoardWeights.size(), players.size()); i++){
 			totalWeight += LeaderBoardWeights.get(i);
 		}
-		if(playerChests.size() > LeaderBoardWeights.size()){
-			totalWeight += (playerChests.size() - LeaderBoardWeights.size()) * AllPlayerWeight;
+		if(players.size() > LeaderBoardWeights.size()){
+			totalWeight += (players.size() - LeaderBoardWeights.size()) * AllPlayerWeight;
 		}
 		
-		for(int i = 0; i < Math.min(LeaderBoardWeights.size(), playerChests.size()); i++){
-			Inventory chestInv = playerChests.get(endStats.get(i).arg1).getInventory();
+		for(int i = 0; i < Math.min(LeaderBoardWeights.size(), players.size()); i++){
+			Inventory chestInv = chestList.get(endStats.get(i).arg1).getChest().getInventory();
+			
 			List<ItemStack> leftoverList = new ArrayList<ItemStack>();
 			leftovers.put(endStats.get(i).arg1, leftoverList);
 			for(ItemStack stack: collectedItems){
@@ -241,13 +253,14 @@ public class AbbaGame implements ConfigurationSerializable{
 			totalWeight -= LeaderBoardWeights.get(i);
 			
 		}
-		for(int i = LeaderBoardWeights.size(); i < playerChests.size(); i++){
-			Inventory chestInv = playerChests.get(endStats.get(i).arg1).getInventory();
+		int playerChestSize = chestList.getOccupiedChests().size();
+		for(int i = LeaderBoardWeights.size(); i < playerChestSize; i++){
+			Inventory chestInv = chestList.get(endStats.get(i).arg1).getChest().getInventory();
 			List<ItemStack> leftoverList = new ArrayList<ItemStack>();
 			leftovers.put(endStats.get(i).arg1, leftoverList);
 			for(ItemStack stack: collectedItems){
-				int newAmount = (int) (stack.getAmount() / (playerChests.size() - LeaderBoardWeights.size()));
-				int left = stack.getAmount() % (playerChests.size() - LeaderBoardWeights.size());
+				int newAmount = (int) (stack.getAmount() / (playerChestSize - LeaderBoardWeights.size()));
+				int left = stack.getAmount() % (playerChestSize - LeaderBoardWeights.size());
 				if(i - LeaderBoardWeights.size() < left){
 					newAmount++;
 				}
@@ -259,26 +272,22 @@ public class AbbaGame implements ConfigurationSerializable{
 		}
 	}
 	
-	public void open(){
-		open = true;
-	}
-	public void close(){
-		open = false;
-	}
+	
 	public boolean addChest(Chest chest, Sign sign){
-		if(!chests.contains(chest)){
-			chests.add(chest);
-			signs.add(sign);
-			sign.setLine(0, "§9[" + name + "]");
-			sign.update();
-			
-			return true;
+		if(chestList.contains(chest)){
+			return false;
 		}
-		return false;
+		chestList.addEmptyChest(new AbbaChest(chest, sign));
+		sign.setLine(0, "§9[" + name + "]");
+		sign.update();
+		
+		return true;
 	}
 	
 	
-	
+	public void setOpen(boolean open){
+		this.open = open;
+	}
 	public boolean isOpen(){
 		return open;
 	}
@@ -289,8 +298,8 @@ public class AbbaGame implements ConfigurationSerializable{
 		return players.size();
 	}
 	public int getMaxPlayers(){
-		if(playerCap == -1 || chests.size() < playerCap){
-			return chests.size();
+		if(playerCap == -1 || chestList.size() < playerCap){
+			return chestList.size();
 		}else{
 			return playerCap;
 		}
@@ -301,11 +310,18 @@ public class AbbaGame implements ConfigurationSerializable{
 	public Location getSpawn(){
 		return spawn;
 	}
+	public void onChestOpen(Inventory inv, HumanEntity player) {
+		
+	}
+	
+	
+	
+	
 	public JoinResult addPlayer(Player p){
 		if(!Permission.hasPermission(p, Permission.JOIN_FULL) && players.size() >= playerCap){
 			return JoinResult.FAIL_FULL;
 		}
-		if(players.size() >= chests.size()){
+		if(players.size() >= chestList.size()){
 			return JoinResult.FAIL_NOCHEST;
 		}
 		if(!open && !Permission.hasPermission(p, Permission.JOIN_CLOSED)){
@@ -313,25 +329,23 @@ public class AbbaGame implements ConfigurationSerializable{
 		}
 		//TODO Add stuff here for whitelist aswell
 		
-		
+		AbbaChest claimedChest = chestList.claimChest(p.getUniqueId());
 		players.add(p.getUniqueId());
-		int index = playerChests.size();
-		Chest chest = chests.get(index);
-		Sign sign = signs.get(index);
-		sign.setLine(1, p.getName());
-		sign.update();
-		playerChests.put(p.getUniqueId(), chest);
+		
+		
+		claimedChest.getSign().setLine(1, p.getName());
+		claimedChest.getSign().update();
+		
 		
 		return JoinResult.SUCCESS;
 	}
 	public void removePlayer(UUID id) {
 		players.remove(id);
-		Player p = plugin.getServer().getPlayer(id);
-		p.setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
-		int index = chests.indexOf(playerChests.remove(p.getUniqueId()));
-		Sign sign = signs.get(index);
-		sign.setLine(1, "");
-		sign.update();
+		plugin.getServer().getPlayer(id).setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
+		AbbaChest aChest = chestList.freeChest(id);
+		
+		aChest.getSign().setLine(1, "");
+		aChest.getSign().update();
 	}
 	
 
@@ -345,8 +359,8 @@ public class AbbaGame implements ConfigurationSerializable{
 	
 	
 	
-	public void setDuration(long newDuration) {
-		duration = (int) newDuration;
+	public void setDuration(int duration) {
+		this.duration = duration;
 		
 	}
 
@@ -386,11 +400,42 @@ public class AbbaGame implements ConfigurationSerializable{
 		abbaMap.put("Duration", duration);
 		abbaMap.put("PlayerCap", playerCap);
 		
+		List<String> playerChestList = new ArrayList<String>();
+		for(AbbaChest aChest:chestList.getOccupiedChests()){
+			playerChestList.add(String.format("%d;%d;%d;%s", aChest.getChest().getX(), aChest.getChest().getY(), aChest.getChest().getZ(), aChest.getOwnerId().toString()));
+		}
+		for(AbbaChest aChest:chestList.getFreeChests()){
+			playerChestList.add(String.format("%d;%d;%d", aChest.getChest().getX(), aChest.getChest().getY(), aChest.getChest().getZ()));
+		}
+		abbaMap.put("Chests", playerChestList);
+		//TODO SERIALIZE PLAYERS
+		
+		
 		
 		return abbaMap;
 	}
+	
+	@SuppressWarnings("unchecked")
 	public static AbbaGame deserialize(Map<String, Object> inputMap){
 		AbbaGame game = new AbbaGame((String) inputMap.get("Name"), (Location) inputMap.get("Spawn"), (int) inputMap.get("Duration"), (int) inputMap.get("PlayerCap"));
+		
+		game.setOpen((boolean) inputMap.get("Open"));
+		game.setDuration((int) inputMap.get("Duration"));
+		game.setPlayerCap((int) inputMap.get("PlayerCap"));
+		
+		for(String input:(List<String>) inputMap.get("Chests")){
+			String[] args = input.split(";");
+			Block sign = game.spawn.getWorld().getBlockAt(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+			
+			AbbaChest aChest = game.new AbbaChest((Chest) BlockUtils.getAttachedBlock(sign), (Sign) sign);
+			if(args.length >= 4){
+				UUID id = UUID.fromString(args[3]);
+				game.chestList.addEmptyChest(aChest);
+				game.chestList.claimChest(id);
+				game.players.add(id);
+				
+			}
+		}
 		
 		switch((String) inputMap.get("State")){
 		
@@ -412,6 +457,12 @@ public class AbbaGame implements ConfigurationSerializable{
 		
 		return game;
 	}
+	public void setPlayerCap(int playerCap) {
+		this.playerCap = playerCap;
+	}
+	public int getPlayerCap(){
+		return playerCap;
+	}
 	public List<UUID> getPlayerIDs() {
 		return players;
 	}
@@ -432,5 +483,111 @@ public class AbbaGame implements ConfigurationSerializable{
 		FINISHED,
 		CONCLUDED
 		
+	}
+	
+	
+	
+	public class AbbaChest{
+		private Chest chest;
+		private Sign sign;
+		private UUID ownerId;
+		public AbbaChest(Chest chest, Sign sign){
+			this.chest = chest;
+			this.sign = sign;
+		}
+		
+		
+		
+		
+		public Chest getChest(){return chest;}
+		public void setChest(Chest chest){this.chest = chest;}
+		public Sign getSign(){return sign;}
+		public void setSign(Sign sign){this.sign = sign;}
+		public UUID getOwnerId(){return ownerId;}
+		public void setOwnerId(UUID ownerId){this.ownerId = ownerId;}
+	}
+	
+	public class AbbaChestPlayerList{
+		private int playerLength = 0;
+		private List<AbbaChest> chests;
+		//creates An ArrayList with two "sublists, each building toward eachother"
+		public AbbaChestPlayerList(int initialSize){
+			chests = new ArrayList<AbbaChest>(initialSize);
+		}
+		
+		
+		public int size() {
+			return chests.size();
+		}
+
+
+		public AbbaChest claimChest(UUID id){
+			AbbaChest chest = chests.get(playerLength);
+			chest.setOwnerId(id);
+			playerLength++;
+			return chest;
+		}
+		public AbbaChest freeChest(UUID id){
+			for(int i = 0; i < playerLength; i++){
+				AbbaChest chest = chests.get(i);
+				if(chest.getOwnerId().equals(id)){
+					chest.setOwnerId(null);
+					playerLength--;
+					Collections.swap(chests, i, playerLength);
+					return chest;
+				}
+			}
+			return null;
+		}
+		public void remove(AbbaChest chest){
+			chests.remove(chest);
+		}
+		public void addEmptyChest(AbbaChest c){
+			chests.add(c);
+		}
+		public List<AbbaChest> getOccupiedChests(){
+			return chests.subList(0, playerLength);
+		}
+		public List<AbbaChest> getFreeChests(){
+			return chests.subList(playerLength, chests.size());
+		}
+		public List<AbbaChest> getChests(){
+			return chests;
+		}
+		public AbbaChest get(int i){
+			return chests.get(i);
+		}
+		public AbbaChest get(UUID id){
+			for(int i = 0; i < playerLength; i++){
+				if(chests.get(i).getOwnerId().equals(id)){
+					return chests.get(i);
+				}
+			}
+			return null;
+		}
+		public boolean contains(AbbaChest abbaChest){
+			for(AbbaChest aChest:chests){
+				if(aChest.equals(abbaChest)){
+					return true;
+				}
+			}
+			return false;
+		}
+		public boolean contains(Chest chest){
+			for(AbbaChest aChest:chests){
+				if(chest.equals(aChest.getChest())){
+					return true;
+				}
+			}
+			return false;
+		}
+		public boolean contains(Sign sign){
+			for(AbbaChest aChest:chests){
+				if(sign.equals(aChest.getSign())){
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 }

@@ -1,31 +1,17 @@
 package me.lennartVH01;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
-import java.util.Set;
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Sign;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -41,7 +27,6 @@ public class Main extends JavaPlugin{
 	
 	
 	
-	public List<AbbaGame> ongoingGames = new ArrayList<AbbaGame>();
 	
 	
 	public static Main plugin;
@@ -49,7 +34,6 @@ public class Main extends JavaPlugin{
 	public FileConfiguration config;
 	
 	
-	public EventListener evtListener = new EventListener();
 	
 	
 	@Override
@@ -62,19 +46,18 @@ public class Main extends JavaPlugin{
 		this.getCommand("abbaadmin").setTabCompleter((TabCompleter) abbaAdminCmd);
 		
 		
-		evtListener.initialize(this);
+		EventListener.initialize(this);
 		AbbaGame.initialize(this);
 		ConfigurationSerialization.registerClass(AbbaGame.class);
 		
 		config = this.getConfig();
 		// Event handler
 		
-		getServer().getPluginManager().registerEvents(evtListener, this);
+		getServer().getPluginManager().registerEvents(new EventListener(), this);
 		
 		
 		//Config
 		this.saveDefaultConfig();
-		
 		
 		
 		
@@ -98,6 +81,8 @@ public class Main extends JavaPlugin{
 		AbbaTools.initialize(this, valueItemPairs);
 		
 		FileConfiguration persist = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "persist.yml"));
+		
+		//Look I did it again :P
 		@SuppressWarnings("unchecked")
 		List<AbbaGame> abbaList = (List<AbbaGame>) persist.getList("Games");
 		AbbaTools.deserialize((List<AbbaGame>) abbaList); 
@@ -118,6 +103,4 @@ public class Main extends JavaPlugin{
 			System.out.println("[ERROR] Could not save to persist.yml! Reason:" + e.getMessage());
 		}
 	}
-	
-	
 }

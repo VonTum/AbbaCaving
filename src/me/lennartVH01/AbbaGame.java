@@ -329,6 +329,13 @@ public class AbbaGame implements ConfigurationSerializable{
 		}
 		//TODO Add stuff here for whitelist aswell
 		
+		ItemStack[] contraband = AbbaTools.getContraband(p.getInventory());
+		if(contraband.length >= 1){
+			p.sendMessage("You cannot join the game with any of the following items!");
+			for(ItemStack stack:contraband){
+				p.sendMessage(" - " + stack.getType().toString().toLowerCase());
+			}
+		}
 		AbbaChest claimedChest = chestList.claimChest(p.getUniqueId());
 		players.add(p.getUniqueId());
 		

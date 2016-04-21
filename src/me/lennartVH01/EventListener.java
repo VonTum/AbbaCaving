@@ -10,9 +10,9 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class EventListener implements Listener{
-	public Main plugin;
-	public void initialize(Main plugin) {
-		this.plugin = plugin;
+	public static Main plugin;
+	public static void initialize(Main pl) {
+		plugin = pl;
 		
 	}
 	@EventHandler

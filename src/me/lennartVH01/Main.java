@@ -64,6 +64,7 @@ public class Main extends JavaPlugin{
 		// get Item Point Values
 		List<Map<?,?>> itemPointMaps = config.getMapList("ItemValues");
 		List<ValueItemPair> valueItemPairs = new ArrayList<ValueItemPair>();
+		List<ItemStack> contrabandList = new ArrayList<ItemStack>();
 		for(Map<?,?> itemMapGeneric:itemPointMaps){
 			
 			//Put the torches and pitchforks away, config.getMapList() *should* return Map<String, Object> anyways
@@ -74,18 +75,30 @@ public class Main extends JavaPlugin{
 				continue;
 			int value = (int) itemMap.remove("Value");
 			ItemStack stack = ItemStack.deserialize(itemMap);
+			contrabandList.add(stack);
 			stack.setAmount(0);
 			valueItemPairs.add(new ValueItemPair(stack, value));
 		}
+		List<Map<?,?>> contrabandMap = config.getMapList("Contraband");
 		
-		AbbaTools.initialize(this, valueItemPairs);
+		for(Map<?,?> itemMapGeneric:contrabandMap){
+			//I did it agian :D
+			@SuppressWarnings("unchecked")
+			Map<String, Object> itemMap = (Map<String, Object>) itemMapGeneric;
+			
+			contrabandList.add(ItemStack.deserialize(itemMap));
+		}
+		
+		AbbaTools.initialize(this, valueItemPairs, contrabandList);
 		
 		FileConfiguration persist = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "persist.yml"));
 		
-		//Look I did it again :P
+		//I can see the rage in thy eyes
 		@SuppressWarnings("unchecked")
 		List<AbbaGame> abbaList = (List<AbbaGame>) persist.getList("Games");
-		AbbaTools.deserialize((List<AbbaGame>) abbaList); 
+		if(abbaList != null){
+			AbbaTools.deserialize((List<AbbaGame>) abbaList); 
+		}
 	}
 	@Override
 	public void onDisable(){

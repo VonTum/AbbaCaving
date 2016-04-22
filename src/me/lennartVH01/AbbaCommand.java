@@ -9,7 +9,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 public class AbbaCommand implements CommandExecutor, TabCompleter{
 	public final String[] abbaSubCommands = new String[]{"calc", "info", "join", "leave", "list"};
@@ -37,30 +36,31 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 					sender.sendMessage("§cGame not found!");
 					return false;
 				}
-				if(!(game.isOpen() || p.hasPermission("AbbaCaving.joinClosed"))){
-					p.sendMessage("§cThis game is closed!");
-					return false;
-				}
-				if(!(game.hasRoom() || p.hasPermission("AbbaCaving.joinFull"))){
-					p.sendMessage("§cThis game is full!");
-					return false;
-				}
-				
-				if(!p.hasPermission("AbbaCaving.allowContraband")){
-					ItemStack[] contraband = AbbaTools.getContraband(p.getInventory());
-					if(contraband != null && contraband.length >= 1){
-						p.sendMessage("§cYou cannot carry " + contraband[0].getType().toString() + " with you on an abba game!");
-						return false;
-					}
-				}
-				
 				AbbaGame oldGame = AbbaTools.getAbbaGame(p);
 				if(oldGame != null){
 					p.sendMessage("Left game \"" + oldGame.getName() + "\"");
 					
 				}
 				
-				AbbaTools.join(p, game);
+				AbbaGame.JoinResult result = AbbaTools.join(p, game);
+				switch(result){
+				case SUCCESS:
+					break;
+				case FAIL_CLOSED:
+					sender.sendMessage(Messages.gameClosedError);
+					return false;
+				case FAIL_FULL:
+					sender.sendMessage(Messages.gameFullError);
+					return false;
+				case FAIL_NOCHEST:
+					sender.sendMessage(Messages.gameNoChestError);
+					return false;
+				case FAIL_WHITELIST:
+					sender.sendMessage(Messages.gameNotWhiteListedError);
+					return false;
+				case FAIL_CONTRABAND:
+					return false;
+				}
 				p.sendMessage("Joined game \"" + game.getName() + "\"");
 				
 				p.teleport(game.getSpawn());

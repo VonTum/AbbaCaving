@@ -16,22 +16,22 @@ NotifyTimes:
 # Max players per game, users with permission AbbaCaving.joinFull can still join
 PlayerCap: 10
 
+
+
+
+# Configures if the items should be redistributed according to the settings below or that the redistribution is done by the admin
+# true -> Plugin automatically gives each player their cut
+# false -> only displays player scores in scoreboard
+RedistributeItems: true
+
+# If this is true, then the players who aren't in the Top will divide the total amount of items among themselves, If this is false, then every player's weight is added to the total weight
+FixPlayerWeight: false
+
+
 # Ratio of spoils given per player: 
 #   All: Amount to be spread over all participants
 #   Pot: Amount to be added to general Pot
 #   Top: first n players receive these chunks of total wins
-
-
-# If this is true, then the players who aren't in the Top will divide the total amount of items among themselves, If this is false, then every player's weight is added to the total weight
-FixPlayerWeight: false;
-#Example Game with 10 players
-# All: 1
-# Top: 
-# - 7
-# - 2
-# If FixPlayerWeight == true then the first player would receive 70% of winnings, second would receive 20% and the remaining 10% is divided among the 8 remaining players
-# If FixPlayerWeight == false then the first player would receive 7/(7+2+8*1)=7/17 of total winnings, second would receive 2/17 and every remaining player will get 1/17
-
 # Part of the winnings that go to each player
 WinWeights:
   All: 1
@@ -39,6 +39,13 @@ WinWeights:
   - 7
   - 2
 
+#Example Game with 10 players
+# All: 1
+# Top: 
+# - 7
+# - 2
+# If FixPlayerWeight == true then the first player would receive 70% of winnings, second would receive 20% and the remaining 10% is divided among the 8 remaining players
+# If FixPlayerWeight == false then the first player would receive 7/(7+2+8*1)=7/17 of total winnings, second would receive 2/17 and every remaining player will get 1/17
 
 
 # Points awarded for each item at the end of an Abba Match
@@ -61,6 +68,8 @@ ItemValues:
   damage: 1
   Value: 10
 
+# Enables the contraband scanner
+ScanContraband: true
 # Prohibited items, automatically includes entries in BlockValues
 Contraband:
 - type: GOLDEN_APPLE

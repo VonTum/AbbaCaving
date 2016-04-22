@@ -161,7 +161,14 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 			}
 			switch(abbaGame.getState()){
 			case WAITING:
-				abbaGame.start();
+				List<String> badPlayerNames = abbaGame.start();
+				if(badPlayerNames.size() != 0){
+					sender.sendMessage("§cCannot start game! The following players are carrying contraband:");
+					for(String name:badPlayerNames){
+						sender.sendMessage("§c - " + name);
+					}
+					return false;
+				}
 				return true;
 			case PAUSED:
 				sender.sendMessage("§cGame paused!");

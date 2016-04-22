@@ -22,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
 public class AbbaTools{
 	public static Main plugin;
 	public static List<ValueItemPair> itemPairs;
+	public static List<ItemStack> contraband;
 	private static List<AbbaGame> games = new ArrayList<AbbaGame>();
 	
 	private static Map<UUID, AbbaGame> playerGameMap = new HashMap<UUID, AbbaGame>();
@@ -29,10 +30,10 @@ public class AbbaTools{
 	
 	
 	
-	public static void initialize(Main plugin, List<ValueItemPair> valueItemPairs) {
+	public static void initialize(Main plugin, List<ValueItemPair> valueItemPairs, List<ItemStack> contraband) {
 		AbbaTools.plugin = plugin;
 		itemPairs = valueItemPairs;
-		
+		AbbaTools.contraband = contraband;
 	}
 	
 	
@@ -102,8 +103,33 @@ public class AbbaTools{
 	}
 	
 	
-	public static ItemStack[] getContraband(Inventory i){
-		return null;
+	public static List<ItemStack> getContraband(Inventory i){
+		List<ItemStack> totalContraband = new ArrayList<ItemStack>();
+		if(!plugin.getConfig().getBoolean("ScanContraband")){
+			return totalContraband;
+		}
+		for(ItemStack detectionStack:contraband){
+			for(ItemStack testStack:i.getStorageContents()){
+				if(detectionStack.isSimilar(testStack)){
+					totalContraband.add(detectionStack);
+					break;	//breaks out of inner loop to go to next detect stack to get 
+				}
+			}
+		}
+		return totalContraband;
+	}
+	public static boolean hasContraband(Inventory i){
+		if(!plugin.getConfig().getBoolean("ScanContraband")){
+			return false;
+		}
+		for(ItemStack detectionStack:contraband){
+			for(ItemStack testStack:i.getStorageContents()){
+				if(detectionStack.isSimilar(testStack)){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	

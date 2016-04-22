@@ -16,7 +16,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -101,7 +100,18 @@ public class AbbaGame implements ConfigurationSerializable{
 		stopClock();
 	}
 	
-	public void start() {
+	public List<String> start() {
+		
+		List<String> badPlayeNames = new ArrayList<String>();
+		for(UUID id:players){
+			Player p = plugin.getServer().getPlayer(id);
+			if(AbbaTools.hasContraband(p.getInventory())){
+				badPlayeNames.add(p.getName());
+			}
+		}
+		if(badPlayeNames.size() != 0){
+			return badPlayeNames;
+		}
 		// TODO Add stuff like tp people to cave if neccecary
 		if(state == GameState.WAITING){
 			endTime = System.currentTimeMillis() + 5000;
@@ -122,6 +132,8 @@ public class AbbaGame implements ConfigurationSerializable{
 		
 		
 		startClock(20);
+		
+		return badPlayeNames; //should be empty
 	}
 	public void pause(){
 		//TODO Implement pausing
@@ -223,6 +235,11 @@ public class AbbaGame implements ConfigurationSerializable{
 		}
 		endStats.sort(scoreComparer);
 		
+		if(!plugin.getConfig().getBoolean("RedistributeItems")){
+			return;
+		}
+		// If configured to do so, the plugin will spread all the goodies around
+		
 		List<Integer> LeaderBoardWeights = plugin.getConfig().getIntegerList("WinWeights.Top");
 		int AllPlayerWeight = plugin.getConfig().getInt("WinWeights.All");
 		int totalWeight = 0;
@@ -310,9 +327,7 @@ public class AbbaGame implements ConfigurationSerializable{
 	public Location getSpawn(){
 		return spawn;
 	}
-	public void onChestOpen(Inventory inv, HumanEntity player) {
-		
-	}
+	
 	
 	
 	
@@ -329,12 +344,13 @@ public class AbbaGame implements ConfigurationSerializable{
 		}
 		//TODO Add stuff here for whitelist aswell
 		
-		ItemStack[] contraband = AbbaTools.getContraband(p.getInventory());
-		if(contraband.length >= 1){
-			p.sendMessage("You cannot join the game with any of the following items!");
+		List<ItemStack> contraband = AbbaTools.getContraband(p.getInventory());
+		if(contraband.size() >= 1){
+			p.sendMessage("You cannot join with any of the following items:");
 			for(ItemStack stack:contraband){
 				p.sendMessage(" - " + stack.getType().toString().toLowerCase());
 			}
+			return JoinResult.FAIL_CONTRABAND;
 		}
 		AbbaChest claimedChest = chestList.claimChest(p.getUniqueId());
 		players.add(p.getUniqueId());
@@ -480,8 +496,10 @@ public class AbbaGame implements ConfigurationSerializable{
 		FAIL_CLOSED,
 		FAIL_WHITELIST,
 		FAIL_NOCHEST,
+		FAIL_CONTRABAND
 		
 	}
+	
 	public enum GameState {
 		WAITING, 
 		COUNTDOWN,
@@ -502,10 +520,6 @@ public class AbbaGame implements ConfigurationSerializable{
 			this.chest = chest;
 			this.sign = sign;
 		}
-		
-		
-		
-		
 		public Chest getChest(){return chest;}
 		public void setChest(Chest chest){this.chest = chest;}
 		public Sign getSign(){return sign;}
@@ -513,6 +527,7 @@ public class AbbaGame implements ConfigurationSerializable{
 		public UUID getOwnerId(){return ownerId;}
 		public void setOwnerId(UUID ownerId){this.ownerId = ownerId;}
 	}
+	
 	
 	public class AbbaChestPlayerList{
 		private int playerLength = 0;

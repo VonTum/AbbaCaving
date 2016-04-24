@@ -9,6 +9,8 @@ import java.util.UUID;
 import me.lennartVH01.AbbaGame.JoinResult;
 
 import org.bukkit.Location;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -16,6 +18,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
 
 
 
@@ -161,15 +164,32 @@ public class AbbaTools{
 		
 	}
 	public static void onSignPlace(SignChangeEvent e){
-		
+		if(e.getPlayer().hasPermission(Permission.REGISTER_CHEST.toString())){
+			if(e.getLine(0).equalsIgnoreCase("[abba]")){
+				AbbaGame game;
+				if(e.getLine(1).equals("")){
+					game = getAbbaGame();
+				}else{
+					game = getAbbaGame(e.getLine(1));
+				}
+				if(game != null){
+					if(game.addChest((Chest) BlockUtils.getAttachedBlock(e.getBlock()), (Sign) e.getBlock())){
+						e.setLine(0, "§9[Abba]");
+					}
+				}
+			}
+		}
 	}
 	
 	
 	public static void deserialize(List<AbbaGame> gameList){
-		games = gameList;
+		
 		for(AbbaGame game:gameList){
-			for(UUID id:game.getPlayerIDs()){
-				playerGameMap.put(id, game);
+			if(game != null){
+				games.add(game);
+				for(UUID id:game.getPlayerIDs()){
+					playerGameMap.put(id, game);
+				}
 			}
 		}
 	}

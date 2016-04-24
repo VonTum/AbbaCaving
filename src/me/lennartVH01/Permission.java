@@ -8,7 +8,8 @@ public enum Permission{
 	
 	JOIN_FULL("AbbaCaving.joinFull"),
 	JOIN_CLOSED("AbbaCaving.joinClosed"),
-	JOIN_WHITELISTED("AbbaCaving.joinWhilelisted");
+	JOIN_WHITELISTED("AbbaCaving.joinWhilelisted"),
+	REGISTER_CHEST("AbbaCaving.registerChest");
 	
 	private final String permission;
 	private Permission(String permission){

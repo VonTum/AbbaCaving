@@ -425,10 +425,10 @@ public class AbbaGame implements ConfigurationSerializable{
 		
 		List<String> playerChestList = new ArrayList<String>();
 		for(AbbaChest aChest:chestList.getOccupiedChests()){
-			playerChestList.add(String.format("%d;%d;%d;%s", aChest.getChest().getX(), aChest.getChest().getY(), aChest.getChest().getZ(), aChest.getOwnerId().toString()));
+			playerChestList.add(String.format("%d;%d;%d;%s", aChest.getSign().getX(), aChest.getSign().getY(), aChest.getSign().getZ(), aChest.getOwnerId().toString()));
 		}
 		for(AbbaChest aChest:chestList.getFreeChests()){
-			playerChestList.add(String.format("%d;%d;%d", aChest.getChest().getX(), aChest.getChest().getY(), aChest.getChest().getZ()));
+			playerChestList.add(String.format("%d;%d;%d", aChest.getSign().getX(), aChest.getSign().getY(), aChest.getSign().getZ()));
 		}
 		abbaMap.put("Chests", playerChestList);
 		//TODO SERIALIZE PLAYERS
@@ -443,8 +443,6 @@ public class AbbaGame implements ConfigurationSerializable{
 		AbbaGame game = new AbbaGame((String) inputMap.get("Name"), (Location) inputMap.get("Spawn"), (int) inputMap.get("Duration"), (int) inputMap.get("PlayerCap"));
 		
 		game.setOpen((boolean) inputMap.get("Open"));
-		game.setDuration((int) inputMap.get("Duration"));
-		game.setPlayerCap((int) inputMap.get("PlayerCap"));
 		
 		for(String input:(List<String>) inputMap.get("Chests")){
 			String[] args = input.split(";");

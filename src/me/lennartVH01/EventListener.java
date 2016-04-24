@@ -8,6 +8,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class EventListener implements Listener{
 	public static Main plugin;
@@ -17,6 +18,9 @@ public class EventListener implements Listener{
 	}
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e){
+		AbbaTools.leave(e.getPlayer().getUniqueId());
+	}
+	public void onPlayerTeleport(PlayerTeleportEvent e){
 		AbbaTools.leave(e.getPlayer().getUniqueId());
 	}
 	

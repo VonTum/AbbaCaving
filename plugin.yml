@@ -10,7 +10,7 @@ commands:
     permission: AbbaCaving.player
     permission-message: You don't have permission to use this command!
   abbaadmin:
-    aliases: [aba, abbaa]
+    aliases: [aa, abbaa]
     description: Abba Admin Command
     permission: AbbaCaving.admin
     permission-message: You don't have permission to use this command!

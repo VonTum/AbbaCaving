@@ -192,7 +192,7 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 			}
 			if(abaGame.getState() == AbbaGame.GameState.FINISHED){
 				abaGame.calcScores();
-				
+				return true;
 			}else{
 				sender.sendMessage("§cGame not finished yet!");
 				return false;

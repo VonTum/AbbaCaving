@@ -17,7 +17,6 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args){
 		if(args.length == 0){
-			sender.sendMessage(Messages.basicHelpMessage);
 			return false;
 		}
 		
@@ -47,27 +46,28 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 				case SUCCESS:
 					break;
 				case FAIL_CLOSED:
-					sender.sendMessage(Messages.gameClosedError);
+					sender.sendMessage(Messages.errorGameClosed);
 					return false;
 				case FAIL_FULL:
-					sender.sendMessage(Messages.gameFullError);
+					sender.sendMessage(Messages.errorGameFull);
 					return false;
 				case FAIL_NOCHEST:
-					sender.sendMessage(Messages.gameNoChestError);
+					sender.sendMessage(Messages.errorNoChest);
 					return false;
 				case FAIL_WHITELIST:
-					sender.sendMessage(Messages.gameNotWhiteListedError);
+					sender.sendMessage(Messages.errorNotWhitelisted);
 					return false;
 				case FAIL_CONTRABAND:
 					return false;
 				}
-				p.sendMessage("Joined game \"" + game.getName() + "\"");
+				p.sendMessage(String.format(Messages.gameJoinMessage, game.getName()));
+				game.messageAll(String.format(Messages.playerJoinMessage, p.getName()));
 				
 				p.teleport(game.getSpawn());
 				p.setGameMode(GameMode.SURVIVAL);
 				return true;
 			}else{
-				sender.sendMessage(Messages.mustBeInGameError);
+				sender.sendMessage(Messages.errorMustBeInGame);
 				return false;
 			}
 			
@@ -78,14 +78,15 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 				Player p = (Player) sender;
 				AbbaGame game = AbbaTools.leave(p.getUniqueId());
 				if(game != null){
-					p.sendMessage("Left game \"" + game.getName() + "\"");
+					p.sendMessage(String.format(Messages.gameLeaveMessage, game.getName()));
+					game.messageAll(String.format(Messages.playerLeaveMessage, p.getName()));
 					return true;
 				}else{
 					p.sendMessage("§cYou aren't in a game right now!");
 					return false;
 				}
 			}else{
-				sender.sendMessage(Messages.mustBeInGameError);
+				sender.sendMessage(Messages.errorMustBeInGame);
 				return false;
 			}
 			
@@ -104,7 +105,7 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 			if(args.length >= 2){
 				game = AbbaTools.getAbbaGame(args[1]);
 				if(game == null){
-					sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
+					sender.sendMessage(String.format(Messages.errorGameNotFound, args[1]));
 					return false;
 				}
 			}else{
@@ -115,7 +116,7 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 					game = AbbaTools.getAbbaGame();
 				}
 				if(game == null){
-					sender.sendMessage("§cNo Games found!");
+					sender.sendMessage(Messages.errorNoGames);
 					return false;
 				}
 			}
@@ -127,7 +128,7 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 			if(sender instanceof Player){
 				calcPlayer = (Player) sender;
 			}else{
-				sender.sendMessage("usage: /abba calc");
+				sender.sendMessage(Messages.helpCalc);
 				return false;
 			}
 			
@@ -138,10 +139,8 @@ public class AbbaCommand implements CommandExecutor, TabCompleter{
 			}
 			sender.sendMessage("§aTotal Score: " + score.total);
 			return true;
-		default:
-			sender.sendMessage(Messages.basicHelpMessage);
-			return false;
 		}
+		return false;
 	}
 	
 	@Override

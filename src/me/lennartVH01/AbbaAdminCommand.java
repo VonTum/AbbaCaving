@@ -31,7 +31,6 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args){
 		if(args.length == 0){
-			sender.sendMessage(Messages.adminHelpMessage);
 			return false;
 		}
 		switch(args[0].toLowerCase()){
@@ -99,7 +98,7 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 					sender.sendMessage("Successfully removed game \"" + args[1] + "\"");
 					return true;
 				}else{
-					sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
+					sender.sendMessage(String.format(Messages.errorGameNotFound, args[1]));
 					return false;
 				}
 			}else{
@@ -112,7 +111,7 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 			if(args.length >= 2){
 				game = AbbaTools.getAbbaGame(args[1]);
 				if(game == null){
-					sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
+					sender.sendMessage(String.format(Messages.errorGameNotFound, args[1]));
 					return false;
 				}
 			}else{
@@ -130,7 +129,7 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 			if(args.length >= 2){
 				aGame = AbbaTools.getAbbaGame(args[1]);
 				if(aGame == null){
-					sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
+					sender.sendMessage(String.format(Messages.errorGameNotFound, args[1]));
 					return false;
 				}
 			}else{
@@ -149,7 +148,7 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 			if(args.length >= 2){
 				abbaGame = AbbaTools.getAbbaGame(args[1]);
 				if(abbaGame == null){
-					sender.sendMessage(String.format(Messages.gameNotFoundError, args[1]));
+					sender.sendMessage(String.format(Messages.errorGameNotFound, args[1]));
 					return false;
 				}
 			}else{
@@ -211,7 +210,7 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 				if(args.length >= 3){
 					AbbaGame abGame = AbbaTools.getAbbaGame(args[1]);
 					if(abGame == null){
-						sender.sendMessage(Messages.gameNotFoundError);
+						sender.sendMessage(Messages.errorGameNotFound);
 					}
 					switch(args[2].toLowerCase()){
 					case "timer":
@@ -276,16 +275,12 @@ public class AbbaAdminCommand implements CommandExecutor, TabCompleter{
 					return false;
 				}
 			}else{
-				sender.sendMessage(Messages.mustSpecifyGameError);
+				sender.sendMessage(Messages.helpConfig);
 				return false;
 			}
 			
-			
-			
-		default:
-			sender.sendMessage(Messages.adminHelpMessage);
-			return false;
 		}
+		return false;
 	}
 	
 	@Override

@@ -38,6 +38,8 @@ public class Main extends JavaPlugin{
 	
 	@Override
 	public void onEnable(){
+		saveResource("lang.yml", false);
+		Messages.reload(YamlConfiguration.loadConfiguration(new File(getDataFolder(), "lang.yml")));
 		AbbaCommand abbaCmd = new AbbaCommand();
 		this.getCommand("abba").setExecutor((CommandExecutor) abbaCmd);
 		this.getCommand("abba").setTabCompleter((TabCompleter) abbaCmd);

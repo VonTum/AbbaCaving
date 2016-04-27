@@ -1,0 +1,34 @@
+msg:
+    gameJoin:"Joined game \"%s\""
+    gameLeave:"Left game \"%s\""
+    playerJoin:"§a%s joined the abba game"
+    playerLeave:"§a%s left the abba game"
+    
+error:
+    noPermission:"§cYou don't have permission to use this command!"
+    mustBeInGame:"§cYou must be ingame to use this command!"
+    gameNotFound:"§cGame %s not found!"
+    noGames:"§cNo Games found!"
+    
+    gameFull:"§cThis game is full!"
+    gameClosed:"§cThis game is closed!"
+    noChest:"§cThere aren't enough chests!"
+    notWhitelisted:"§cYou aren't whitelisted for this game!"
+    blacklisted:"§cYou are blacklisted for this game!"
+    
+help:
+    join:"§aabba join [game]§f: Joins the Abba Match"
+    leave:"§aabba leave§f: Leaves current Abba Game"
+    info:"§aabba info [game]§f: Displays info about an Abba Match"
+    list:"§aabba list§f: Lists all Abba Matches"
+    calc:"§aabba calc§f: Calculates the score of your current inventory"
+    
+    create:"§aabba create [game]§f: Creates an Abba Game"
+    remove:"§aabba remove <game>§f: Removes an Abba Game"
+    open:"§aabba open [game]§f: Allows players to join an Abba Game"
+    close:"§aabba close [game]§f: Prevents players from joining an Abba Game"
+    start:"§aabba start [game]§f: Starts an Abba Game"
+    calcscores:"§aabba calcscores§f: Use to calculate the scores and determine a winner at the end of a Match"
+    reload:"§aabba config <game> <timer|addchest> ...§f: Configures an Abba Game"
+    config:"§aabba reload§f: Reloads the config"
+    

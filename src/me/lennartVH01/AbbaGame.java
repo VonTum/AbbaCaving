@@ -102,15 +102,15 @@ public class AbbaGame implements ConfigurationSerializable{
 	
 	public List<String> start() {
 		
-		List<String> badPlayeNames = new ArrayList<String>();
+		List<String> contrabandHolders = new ArrayList<String>();
 		for(UUID id:players){
 			Player p = plugin.getServer().getPlayer(id);
 			if(AbbaTools.hasContraband(p.getInventory())){
-				badPlayeNames.add(p.getName());
+				contrabandHolders.add(p.getName());
 			}
 		}
-		if(badPlayeNames.size() != 0){
-			return badPlayeNames;
+		if(contrabandHolders.size() != 0){
+			return contrabandHolders;
 		}
 		// TODO Add stuff like tp people to cave if neccecary
 		if(state == GameState.WAITING){
@@ -133,7 +133,7 @@ public class AbbaGame implements ConfigurationSerializable{
 		
 		startClock(20);
 		
-		return badPlayeNames; //should be empty
+		return contrabandHolders; //should be empty
 	}
 	public void pause(){
 		//TODO Implement pausing
@@ -370,7 +370,11 @@ public class AbbaGame implements ConfigurationSerializable{
 		aChest.getSign().setLine(1, "");
 		aChest.getSign().update();
 	}
-	
+	public void messageAll(String msg){
+		for(UUID id:players){
+			plugin.getServer().getPlayer(id).sendMessage(msg);
+		}
+	}
 
 	public GameState getState(){
 		return state;

@@ -1,34 +1,76 @@
 msg:
-    gameJoin:"Joined game \"%s\""
-    gameLeave:"Left game \"%s\""
-    playerJoin:"§a%s joined the abba game"
-    playerLeave:"§a%s left the abba game"
+    playerJoin: "&a%s joined the abba game"
+    playerLeave: "&a%s left the abba game"
+    
+    gameCountdown: "&aReady your picks!"
+    gameStart: "&aGO!"
+    gamePause: "&aThe game has been paused!"
+    gameEnd: "&aThe game has ended!\nTotal Items Collected:"
     
 error:
-    noPermission:"§cYou don't have permission to use this command!"
-    mustBeInGame:"§cYou must be ingame to use this command!"
-    gameNotFound:"§cGame %s not found!"
-    noGames:"§cNo Games found!"
+    noGames: "&cNo Games found!"
+    noPermission: "&cYou don't have permission to use this command!"
+    noPendingOperation: "&cNo pending operation!"
+    mustBeInGame: "&cYou must be ingame to use this command!"
+    gameNotFound: "&cGame %s not found!"
+    playerNotFound: "&cPlayer %s not found!"
+    worldNotFound: "&cWorld %s not found!"
     
-    gameFull:"§cThis game is full!"
-    gameClosed:"§cThis game is closed!"
-    noChest:"§cThere aren't enough chests!"
-    notWhitelisted:"§cYou aren't whitelisted for this game!"
-    blacklisted:"§cYou are blacklisted for this game!"
+    gameFull: "&cThis game is full!"
+    gameClosed: "&cThis game is closed!"
+    notWhitelisted: "&cYou aren't whitelisted for this game!"
+    blacklisted: "&cYou are blacklisted for this game!"
+    contraband: "&cYou cannot join the game with the following items: "
+    breakClaimedChest: "&cYou cannot break an occupied chest!"
     
 help:
-    join:"§aabba join [game]§f: Joins the Abba Match"
-    leave:"§aabba leave§f: Leaves current Abba Game"
-    info:"§aabba info [game]§f: Displays info about an Abba Match"
-    list:"§aabba list§f: Lists all Abba Matches"
-    calc:"§aabba calc§f: Calculates the score of your current inventory"
+    join: "&aabba join [game]&f: Joins the Abba Match"
+    leave: "&aabba leave&f: Leaves current Abba Game"
+    info: "&aabba info [game]&f: Displays info about an Abba Match"
+    list: "&aabba list&f: Lists all Abba Matches"
+    calc: "&aabba calc&f: Calculates the score of your current inventory"
     
-    create:"§aabba create [game]§f: Creates an Abba Game"
-    remove:"§aabba remove <game>§f: Removes an Abba Game"
-    open:"§aabba open [game]§f: Allows players to join an Abba Game"
-    close:"§aabba close [game]§f: Prevents players from joining an Abba Game"
-    start:"§aabba start [game]§f: Starts an Abba Game"
-    calcscores:"§aabba calcscores§f: Use to calculate the scores and determine a winner at the end of a Match"
-    reload:"§aabba config <game> <timer|addchest> ...§f: Configures an Abba Game"
-    config:"§aabba reload§f: Reloads the config"
+    create: "&aabba create [game]&f: Creates an Abba Game"
+    remove: "&aabba remove <game>&f: Removes an Abba Game"
+    open: "&aabba open [game]&f: Allows players to join an Abba Game"
+    close: "&aabba close [game]&f: Prevents players from joining an Abba Game"
+    start: "&aabba start [game]&f: Starts an Abba Game"
+    calcscores: "&aabba calcscores&f: Use to calculate the scores and determine a winner at the end of a Match"
+    reload: "&aabba config <game> <timer|addchest> ...&f: Configures an Abba Game"
+    config: "&aabba reload&f: Reloads the config"
     
+chest:
+    create: "Successfully created Chest"
+    remove: "Successfully removed Chest"
+command:
+    join:
+        success: "Joined game %s"
+    leave:
+        success: "Left game %s"
+    create:
+        success: "Game %s created successfully!"
+    remove:
+        success: "Game %s removed successfully"
+        confirm: "Are you sure? Use /abba confirm to confirm"
+    
+    open:
+        success: "Opened game %s"
+    close:
+        success: "Closed game %s"
+    start:
+        error:
+            running: "&cGame %s already running!"
+            finished: "&cGame %s already finished!"
+            contraband: "&cSome players are still carrying contraband! (hover to see items)"
+    pause:
+        success: "Game %s paused"
+        error: "&cGame %s isn't running!"
+    config:
+        help: "&aabba config <game> <timer|playercap> ..."
+        command:
+            timer:
+                help: "&aabba config <game> timer <newTime>"
+                success: "Timer updated"
+            playercap:
+                help: "&aabba config <game> playercap <newPlayerCap>"
+                success: "PlayerCap updated"

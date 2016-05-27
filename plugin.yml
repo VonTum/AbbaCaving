@@ -7,15 +7,10 @@ commands:
   abba:
     aliases: [ab, abbacaving]
     description: Abba hub command
-    permission: AbbaCaving.player
-    permission-message: You don't have permission to use this command!
-  abbaadmin:
-    aliases: [aa, abbaa]
-    description: Abba Admin Command
-    permission: AbbaCaving.admin
+    permission: AbbaCaving.basic
     permission-message: You don't have permission to use this command!
 permissions:
-  AbbaCaving.player:
+  AbbaCaving.basic:
     description: Gives access to basic commands
     default: true
   AbbaCaving.admin:
@@ -24,8 +19,8 @@ permissions:
   AbbaCaving.joinFull:
     description: Allows to join full games
     default: op
-  AbbaCaving.registerChest:
-    description: Allows registering of chests to an Abba Game
+  AbbaCaving.joinClosed:
+    description: Allows to join closed games
     default: op
   AbbaCaving.allowContraband:
     description: Users with this permission will not be scanned for contraband

@@ -1,27 +1,21 @@
 package me.lennartVH01;
 
-import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.Permissible;
 
 
 
-public enum Permission{
+public class Permission{
+	public static boolean debug = false;
+	private String perm;
+	private Permission(String perm){this.perm = perm;}
+	public boolean has(Permissible p){
+		return p.hasPermission(perm) || debug;
+	}
 	
-	JOIN_FULL("AbbaCaving.joinFull"),
-	JOIN_CLOSED("AbbaCaving.joinClosed"),
-	JOIN_WHITELISTED("AbbaCaving.joinWhilelisted"),
-	REGISTER_CHEST("AbbaCaving.registerChest");
+	public static Permission JOIN_FULL = new Permission("AbbaCaving.joinFull");
+	public static Permission JOIN_CLOSED = new Permission("AbbaCaving.joinClosed");
+	public static Permission JOIN_WHITELISTED = new Permission("AbbaCaving.joinWhilelisted");
 	
-	private final String permission;
-	private Permission(String permission){
-		this.permission = permission;
-	}
-	public static boolean hasPermission(CommandSender sender, Permission perm){
-		return hasPermission(sender, perm.permission);
-	}
-	public static boolean hasPermission(CommandSender sender, String perm){
-		return sender.hasPermission(perm);
-	}
-	public String toString(){
-		return permission;
-	}
+	public static Permission BASIC = new Permission("AbbaCaving.basic");
+	public static Permission ADMIN = new Permission("AbbaCaving.admin");
 }

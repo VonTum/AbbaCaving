@@ -3,7 +3,6 @@ package me.lennartVH01.game;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import me.lennartVH01.Config;
 import me.lennartVH01.Messages;
 import me.lennartVH01.Permission;
@@ -193,19 +192,6 @@ public class BasicAbbaGame implements AbbaGame{
 		
 		broadcast(String.format(Messages.playerLeave, p.getName()));
 		p.sendMessage(String.format(Messages.commandLeaveSuccess, this.getName()));
-	}
-	
-	
-	
-	
-	//TODO SERIALIZATION
-	@Override
-	public Map<String, Object> serialize(){
-		return null;
-		
-	}
-	public static AbbaGame deserialize(Map<String, Object> inputMap){
-		return null;
 	}
 	
 	

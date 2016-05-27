@@ -5,10 +5,9 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 
-public interface AbbaGame extends ConfigurationSerializable{
+public interface AbbaGame{
 	
 	
 	public boolean join(Player p);

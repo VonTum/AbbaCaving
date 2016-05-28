@@ -34,6 +34,8 @@ public class Messages{
 	public static String chestCreateSuccess;
 	public static String chestRemoveSuccess;
 	
+	public static String helpAbba;
+	
 	public static String helpJoin;
 	public static String helpLeave;
 	public static String helpInfo;
@@ -104,6 +106,8 @@ public class Messages{
 		errorBreakClaimedChest = load("error.breakClaimedChest");
 		chestCreateSuccess = load("chest.create");
 		chestRemoveSuccess = load("chest.remove");
+		
+		helpAbba = load("help.abba");
 		
 		helpJoin = load("help.join");
 		helpLeave = load("help.leave");

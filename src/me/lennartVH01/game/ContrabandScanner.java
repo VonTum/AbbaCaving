@@ -11,19 +11,19 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class ContrabandScanner{
-	private ItemStack[] illegalItems;
+	private StackTester[] illegalItems;
 	
 	
 	
-	public ContrabandScanner(ItemStack[] illegalItems){
+	public ContrabandScanner(StackTester[] illegalItems){
 		this.illegalItems = illegalItems;
 	}
 	
 	public List<ItemStack> getContraband(Inventory inv){
 		List<ItemStack> totalContraband = new ArrayList<ItemStack>();
-		for(ItemStack detectionStack:illegalItems){
+		for(StackTester tester:illegalItems){
 			for(ItemStack stack:inv){
-				if(detectionStack.isSimilar(stack)){
+				if(tester.isSimilar(stack)){
 					totalContraband.add(stack);
 					break;
 				}
@@ -33,9 +33,9 @@ public class ContrabandScanner{
 	}
 	
 	public boolean hasContraband(Inventory inv){
-		for(ItemStack detectionStack:illegalItems){
+		for(StackTester tester:illegalItems){
 			for(ItemStack stack:inv){
-				if(detectionStack.isSimilar(stack)){
+				if(tester.isSimilar(stack)){
 					return true;
 				}
 			}

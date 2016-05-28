@@ -41,7 +41,7 @@ public class BasicAbbaGame implements AbbaGame{
 	
 	
 	private ContrabandScanner scanner;
-	private ItemStack[] itemValues;
+	private StackTester[] itemValues;
 	
 	private List<Player> players;
 	
@@ -50,7 +50,7 @@ public class BasicAbbaGame implements AbbaGame{
 	private Score timerScore = objective.getScore(TIMER_SCORE_NAME);
 	
 	
-	public BasicAbbaGame(JavaPlugin plugin, String name, Location spawn, int duration, int playerCap, ContrabandScanner scanner, ItemStack[] itemValues){
+	public BasicAbbaGame(JavaPlugin plugin, String name, Location spawn, int duration, int playerCap, ContrabandScanner scanner, StackTester[] itemValues){
 		clock = new Clock(plugin);
 		this.name = name;
 		this.spawn = spawn;
@@ -119,11 +119,16 @@ public class BasicAbbaGame implements AbbaGame{
 				totalItems[i] += score.count[i];
 			}
 		}
-		StringBuilder msgBuilder = new StringBuilder();
+		StringBuilder msgBuilder = new StringBuilder("[");
 		for(int i = 0; i < itemValues.length; i++){
-			msgBuilder.append(ChatUtil.getName(itemValues[i]) + ": " + totalItems[i]);
+			if(totalItems[i] > 0)
+				msgBuilder.append("{\"translate\":\"" + ChatUtil.getName(itemValues[i].asItemStack()) + "\"},\": " + totalItems[i] + "\n\",");
 		}
-		
+		if(msgBuilder.length() > 1){
+			msgBuilder.replace(msgBuilder.length() - 3, msgBuilder.length() - 1, "\"]");
+			broadcast(ChatUtil.fromRawJSON(msgBuilder.toString()));
+			
+		}
 		
 		
 		for(int i = 0; i < scores.size(); i++){
@@ -251,7 +256,6 @@ public class BasicAbbaGame implements AbbaGame{
 			sender.sendMessage(Messages.commandStartErrorRunning);
 			return false;
 		case FINISHED:
-		case CONCLUDED:
 			sender.sendMessage(Messages.commandStartErrorFinished);
 			return false;
 		default:
@@ -287,19 +291,18 @@ public class BasicAbbaGame implements AbbaGame{
 			AbbaScore score = new AbbaScore(p, itemValues.length);
 			
 			
-			for(Iterator<ItemStack> iter = p.getInventory().iterator(); iter.hasNext();){
-				ItemStack stack = iter.next();
+			for(ItemStack stack: p.getInventory()){
 				for(int i = 0; i < itemValues.length; i++){
 					if(itemValues[i].isSimilar(stack)){
 						score.count[i] += stack.getAmount();
 						break;
 					}
 				}
-				scores.add(score);
 			}
+			scores.add(score);
 			
 			for(int i = 0; i < itemValues.length; i++){
-				score.total += itemValues[i].getAmount() * score.count[i];
+				score.total += itemValues[i].getValue() * score.count[i];
 				totalItems[i] += score.count[i];
 			}
 		}
@@ -327,10 +330,11 @@ public class BasicAbbaGame implements AbbaGame{
 	@Override public String getName(){return name;}
 	@Override public Location getSpawn(){return spawn;}
 	@Override public int getDuration(){return duration;}
-	@Override public void setTimeLeft(int timeLeft){if(state == GameState.WAITING)this.duration = timeLeft; else this.timeLeft = timeLeft;}
+	@Override public void setTimeLeft(int timeLeft){if(state == GameState.WAITING) this.duration = timeLeft; else this.timeLeft = timeLeft;}
 	@Override public int getTimeLeft(){return timeLeft;}
 	
 	@Override public void broadcast(final String message){for(Player p:players) p.sendMessage(message);}
+	@Override public void broadcast(final IChatBaseComponent message){for(Player p:players) ChatUtil.send(p, message);}
 	@Override public void tpAll(final Location loc){for(Player p:players) p.teleport(loc);}
 	
 	private static class Clock{

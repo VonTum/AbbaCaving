@@ -3,6 +3,9 @@ package me.lennartVH01.game;
 import java.util.List;
 
 
+
+import net.minecraft.server.v1_9_R1.IChatBaseComponent;
+
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -32,6 +35,7 @@ public interface AbbaGame{
 	public int getTimeLeft();
 	
 	public void broadcast(String message);
+	public void broadcast(IChatBaseComponent message);
 	public void tpAll(Location loc);
 	
 	public boolean start(CommandSender sender);
@@ -45,8 +49,7 @@ public interface AbbaGame{
 		COUNTDOWN,
 		RUNNING, 
 		PAUSED, 
-		FINISHED,
-		CONCLUDED
+		FINISHED
 		
 	}
 	

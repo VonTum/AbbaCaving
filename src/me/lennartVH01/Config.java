@@ -3,21 +3,23 @@ package me.lennartVH01;
 import java.util.List;
 import java.util.Map;
 
+import me.lennartVH01.game.StackTester;
+
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.inventory.ItemStack;
 
 public class Config{
 	private Config(){}
 	
-	public static ItemStack[] itemValues;
-	public static ItemStack[] contraband;
+	public static StackTester[] itemValues;
+	public static StackTester[] contraband;
 	
 	public static int defaultDuration;
 	public static int defaultPlayerCap;
 	
 	public static boolean scanContraband;
 	
-	@SuppressWarnings("unchecked")
+	//@SuppressWarnings("unchecked")
 	public static void reload(FileConfiguration config){
 		Permission.debug = config.getBoolean("Debug");
 		
@@ -25,22 +27,34 @@ public class Config{
 		defaultPlayerCap = config.getInt("PlayerCap");
 		scanContraband = config.getBoolean("ScanContraband");
 		
-		List<Map<?, ?>> itemValueMapList = config.getMapList("ItemValues");
-		List<Map<?, ?>> contrabandMapList = config.getMapList("Contraband");
+		List<Object> itemValueList = (List<Object>) config.getList("ItemValues");
+		List<Object> contrabandList = (List<Object>) config.getList("Contraband");
 		
-		itemValues = new ItemStack[itemValueMapList.size()];
-		contraband = new ItemStack[itemValueMapList.size() + contrabandMapList.size()];
+		itemValues = new StackTester[itemValueList.size()];
+		contraband = new StackTester[itemValueList.size() + contrabandList.size()];
 		
 		
-		for(int i = 0; i < contrabandMapList.size(); i++){
-			contraband[i] = ItemStack.deserialize((Map<String, Object>) contrabandMapList.get(i));
+		for(int i = 0; i < contrabandList.size(); i++){
+			contraband[i] = toStackTester(contrabandList.get(i));
 		}
-		for(int i = 0; i < itemValueMapList.size(); i++){
-			ItemStack stack = ItemStack.deserialize((Map<String, Object>) itemValueMapList.get(i));
-			itemValues[i] = stack;
-			contraband[contrabandMapList.size() + i] = stack;
+		for(int i = 0; i < itemValueList.size(); i++){
+			StackTester tester = toStackTester(itemValueList.get(i));
+			itemValues[i] = tester;
+			contraband[contrabandList.size() + i] = tester;
 		}
 		
 		
+	}
+	private static StackTester toStackTester(Object input){
+		try{
+			if(input instanceof String){
+				return new StackTester((String) input);
+			}else if(input instanceof Map){
+				return new StackTester((Map<String, Object>) input);
+			}
+		}catch(InvalidConfigurationException ex){
+			ex.printStackTrace();
+		}
+		return null;
 	}
 }

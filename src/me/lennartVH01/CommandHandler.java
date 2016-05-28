@@ -555,7 +555,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String alias, String[] args){
-		CommandFunc command = commands.get(args[0]);
+		CommandFunc command = commands.get(args[0].toLowerCase());
 		if(command != null){
 			if(command.hasPermission(sender)){
 				return command.run(sender, args);
@@ -563,6 +563,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 				sender.sendMessage(Messages.errorNoPermission);
 				return false;
 			}	
+		}else{
+			sender.sendMessage(Messages.helpAbba);
 		}
 		return false;
 	}
@@ -572,7 +574,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 		if(args.length == 1){
 			List<String> suggestions = new ArrayList<String>();
 			commands.forEach((name, command) -> {
-				if(name.startsWith(args[0]) && command.hasPermission(sender))
+				if(name.startsWith(args[0].toLowerCase()) && command.hasPermission(sender))
 					suggestions.add(name);
 			});
 			

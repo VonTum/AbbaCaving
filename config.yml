@@ -17,33 +17,23 @@ PlayerCap: 10
 
 # Points awarded for each item at the end of an Abba Match
 ItemValues:
-- type: IRON_ORE
-  Value: 1
-- type: REDSTONE_ORE
-  Value: 2
-- type: GOLD_ORE
-  Value: 4
-- type: LAPIS_ORE
-  Value: 8
-- type: DIAMOND_ORE
-  Value: 10
-- type: EMERALD_ORE
-  Value: 10
-- type: DIAMOND_BARDING
-  Value: 10
-- type: GOLDEN_APPLE
-  damage: 1
-  Value: 10
+- IRON_ORE=1
+- REDSTONE_ORE=2
+- GOLD_ORE=4
+- LAPIS_ORE=8
+- DIAMOND_ORE=10
+- EMERALD_ORE=10
+- DIAMOND_BARDING=10
+- GOLDEN_APPLE(1)=10
 
 # Enables the contraband scanner
 ScanContraband: true
 
 # Prohibited items, automatically includes entries in ItemValues
 Contraband:
-- type: GOLDEN_APPLE
-  damage: 0
-- type: POTION
+- GOLDEN_APPLE(0)
+- POTION
 
 # Enables debugging
 # ONLY USE IF YOU KNOW WHAT YOU ARE DOING OR HAVE BEEN ASKED TO DO SO BY A DEVELOPER
-Debug: false
+Debug: true

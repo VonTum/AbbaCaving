@@ -9,8 +9,6 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
-import me.lennartVH01.Messages;
-
 public class GameManager implements Listener{
 	private GameManager(){} //private constructor, singleton
 	private static List<AbbaGame> games = new ArrayList<AbbaGame>();

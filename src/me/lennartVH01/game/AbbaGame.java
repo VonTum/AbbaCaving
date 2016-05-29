@@ -4,7 +4,9 @@ import java.util.List;
 
 
 
-import net.minecraft.server.v1_9_R1.IChatBaseComponent;
+
+
+import net.minecraft.server.v1_9_R2.IChatBaseComponent;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;

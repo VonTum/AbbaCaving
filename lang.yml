@@ -24,7 +24,7 @@ error:
     breakClaimedChest: "&cYou cannot break an occupied chest!"
     
 help:
-    abba: "&aabba <subcommand>"
+    abba: "&aabba <%s>"
     
     join: "&aabba join [game]&f: Joins the Abba Match"
     leave: "&aabba leave&f: Leaves current Abba Game"

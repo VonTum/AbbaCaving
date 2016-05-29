@@ -18,6 +18,8 @@ import java.util.UUID;
 
 
 
+
+
 import me.lennartVH01.game.BasicAbbaGame;
 import me.lennartVH01.game.ContrabandScanner;
 import me.lennartVH01.game.GameManager;
@@ -31,6 +33,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
@@ -555,6 +558,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String alias, String[] args){
+		if(args.length == 0){
+			sendHelpMessage(sender);
+			return false;
+		}
 		CommandFunc command = commands.get(args[0].toLowerCase());
 		if(command != null){
 			if(command.hasPermission(sender)){
@@ -564,10 +571,21 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 				return false;
 			}	
 		}else{
-			sender.sendMessage(Messages.helpAbba);
+			sendHelpMessage(sender);
 		}
 		return false;
 	}
+	private void sendHelpMessage(CommandSender sender){
+		StringBuilder messageBuilder = new StringBuilder();
+		commands.forEach((name, cmd) -> {
+			if(cmd.hasPermission(sender)){
+				messageBuilder.append(name + "|");
+			}
+		});
+		messageBuilder.deleteCharAt(messageBuilder.length() - 1);
+		sender.sendMessage(String.format(Messages.helpAbba, messageBuilder.toString()));
+	}
+	
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args){

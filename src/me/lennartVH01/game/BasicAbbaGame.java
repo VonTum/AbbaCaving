@@ -3,12 +3,13 @@ package me.lennartVH01.game;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import me.lennartVH01.Config;
 import me.lennartVH01.Messages;
 import me.lennartVH01.Permission;
 import me.lennartVH01.util.ChatUtil;
-import net.minecraft.server.v1_9_R1.ChatComponentText;
-import net.minecraft.server.v1_9_R1.IChatBaseComponent;
+import net.minecraft.server.v1_9_R2.ChatComponentText;
+import net.minecraft.server.v1_9_R2.IChatBaseComponent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -133,7 +134,9 @@ public class BasicAbbaGame implements AbbaGame{
 		
 		for(int i = 0; i < scores.size(); i++){
 			AbbaScore score = scores.get(i);
-			objective.getScore(score.player.getName()).setScore(score.total);
+			Score scoreboardScore = objective.getScore(score.player.getName());
+			scoreboardScore.setScore(1);
+			scoreboardScore.setScore(score.total);
 			
 		}
 	}
@@ -219,13 +222,13 @@ public class BasicAbbaGame implements AbbaGame{
 							messageBuilder.append("{\"translate\":\"" + ChatUtil.getName(contraband.get(i)) + "\"},\"\\n\",");
 							
 						}
-						messageBuilder.setCharAt(messageBuilder.length() - 1, ']');
-						messageBuilder.append("}},");
+						messageBuilder.replace(messageBuilder.length() - 6, messageBuilder.length(), "]");
+						//messageBuilder.setCharAt(messageBuilder.length() - 1, ']');
+						messageBuilder.append("}},\"\\n\",");
 					}
 				}
 				if(!canStart){
-					messageBuilder.delete(messageBuilder.length() - 9, messageBuilder.length() - 4);
-					messageBuilder.setCharAt(messageBuilder.length() - 1, ']');
+					messageBuilder.replace(messageBuilder.length() - 6, messageBuilder.length(), "]");
 					System.out.println(messageBuilder.toString());
 					ChatUtil.send((Player) sender, ChatUtil.fromRawJSON(messageBuilder.toString()));
 				}

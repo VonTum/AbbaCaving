@@ -36,4 +36,4 @@ Contraband:
 
 # Enables debugging
 # ONLY USE IF YOU KNOW WHAT YOU ARE DOING OR HAVE BEEN ASKED TO DO SO BY A DEVELOPER
-Debug: true
+Debug: false

@@ -23,6 +23,9 @@ public class GameManager implements Listener{
 	public static boolean removeGame(AbbaGame game){
 		if(game == null)
 			return false;
+		for(Player p:game.getPlayers()){
+			playerGames.remove(p.getUniqueId());
+		}
 		games.remove(game);
 		game.destroy();
 		return true;

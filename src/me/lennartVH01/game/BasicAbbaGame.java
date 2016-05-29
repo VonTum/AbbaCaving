@@ -333,7 +333,7 @@ public class BasicAbbaGame implements AbbaGame{
 	@Override public String getName(){return name;}
 	@Override public Location getSpawn(){return spawn;}
 	@Override public int getDuration(){return duration;}
-	@Override public void setTimeLeft(int timeLeft){if(state == GameState.WAITING) this.duration = timeLeft; else this.timeLeft = timeLeft;}
+	@Override public void setTimeLeft(int timeLeft){if(state == GameState.WAITING || state == GameState.COUNTDOWN) this.duration = timeLeft; else this.timeLeft = timeLeft;}
 	@Override public int getTimeLeft(){return timeLeft;}
 	
 	@Override public void broadcast(final String message){for(Player p:players) p.sendMessage(message);}

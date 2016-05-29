@@ -19,7 +19,6 @@ public class Config{
 	
 	public static boolean scanContraband;
 	
-	//@SuppressWarnings("unchecked")
 	public static void reload(FileConfiguration config){
 		Permission.debug = config.getBoolean("Debug");
 		
@@ -27,7 +26,10 @@ public class Config{
 		defaultPlayerCap = config.getInt("PlayerCap");
 		scanContraband = config.getBoolean("ScanContraband");
 		
+		
+		@SuppressWarnings("unchecked")
 		List<Object> itemValueList = (List<Object>) config.getList("ItemValues");
+		@SuppressWarnings("unchecked")
 		List<Object> contrabandList = (List<Object>) config.getList("Contraband");
 		
 		itemValues = new StackTester[itemValueList.size()];
@@ -50,7 +52,9 @@ public class Config{
 			if(input instanceof String){
 				return new StackTester((String) input);
 			}else if(input instanceof Map){
-				return new StackTester((Map<String, Object>) input);
+				@SuppressWarnings("unchecked")
+				Map<String, Object> mapInput = (Map<String, Object>) input;
+				return new StackTester((Map<String, Object>) mapInput);
 			}
 		}catch(InvalidConfigurationException ex){
 			ex.printStackTrace();

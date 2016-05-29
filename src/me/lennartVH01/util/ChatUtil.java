@@ -13,7 +13,6 @@ public class ChatUtil {
 	}
 	public static IChatBaseComponent stackToChat(org.bukkit.inventory.ItemStack stack){
 		return CraftItemStack.asNMSCopy(stack).B();
-		
 	}
 	public static IChatBaseComponent fromRawJSON(String json){
 		return IChatBaseComponent.ChatSerializer.a(json);

@@ -10,16 +10,6 @@ import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
-
-
-
-
-
-
-
-
-
-
 import me.lennartVH01.game.BasicAbbaGame;
 import me.lennartVH01.game.ContrabandScanner;
 import me.lennartVH01.game.GameManager;
@@ -27,13 +17,11 @@ import me.lennartVH01.game.AbbaGame;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
@@ -188,85 +176,38 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 	private CommandFunc createCmd = new CommandFunc(){
 		@Override public boolean hasPermission(CommandSender sender){return Permission.ADMIN.has(sender);}
 		@Override public boolean run(CommandSender sender, String[] args){
-			if(args.length <= 5 && !(sender instanceof Player)){
-				System.out.println(Messages.errorMustBeInGame);
+			if(sender instanceof Player){
+					
+				String gameName;
+				Location gameSpawn = null;
+				
+				// set gameName
+				if(args.length >= 2){
+					gameName = args[1];
+					if(GameManager.getGame(gameName) != null)
+						sender.sendMessage(String.format(Messages.commandCreateErrorExists, gameName));
+					
+				}else{
+					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+					gameName = "Abba" + dateFormat.format(new Date());
+					
+					while(GameManager.getGame(gameName) != null)
+						gameName += "_";
+				}
+				
+				gameSpawn = ((Player) sender).getLocation();
+				
+				AbbaGame game = new BasicAbbaGame(plugin, gameName, gameSpawn, Config.defaultDuration, Config.defaultPlayerCap, new ContrabandScanner(Config.contraband), Config.itemValues);
+				GameManager.registerGame(game);
+				sender.sendMessage(String.format(Messages.commandCreateSuccess, gameName));
+				return true;
+			}else{
+				sender.sendMessage(Messages.errorMustBeInGame);
 				return false;
 			}
-			String gameName;
-			Location gameSpawn = null;
-			
-			// set gameName
-			if(args.length >= 2){
-				gameName = args[1];
-			}else{
-				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-				gameName = "Abba" + dateFormat.format(new Date());
-				
-			}
-			
-			// set gameSpawn
-			if(args.length >= 5){
-				double spawnX, spawnY, spawnZ;
-				try{
-					spawnX = Double.parseDouble(args[2]);
-					spawnY = Double.parseDouble(args[3]);
-					spawnZ = Double.parseDouble(args[4]);
-				}catch(NumberFormatException e){
-					return false;
-				}
-				if(args.length >= 6){
-					World w = Bukkit.getWorld(args[5]);
-					if(w != null){
-						
-						gameSpawn = new Location(w, spawnX, spawnY, spawnZ);
-						
-					}else{
-						sender.sendMessage(String.format(Messages.errorWorldNotFound, args[5]));
-						return false;
-					}
-				}
-			}else{
-				if(sender instanceof Player){
-					gameSpawn = ((Player) sender).getLocation();
-				}else{
-					return false;
-				}
-			}
-			
-			
-			
-			while(GameManager.getGame(gameName) != null){
-				gameName += "_";
-			}
-			//create game
-			AbbaGame game = new BasicAbbaGame(plugin, gameName, gameSpawn, Config.defaultDuration, Config.defaultPlayerCap, new ContrabandScanner(Config.contraband), Config.itemValues);
-			GameManager.registerGame(game);
-			sender.sendMessage(String.format(Messages.commandCreateSuccess, gameName));
-			//sender.sendMessage(String.format(Messages.commandCreateSuccess, gameName));
-			return true;
 		}
 		@Override public List<String> tabComplete(CommandSender sender, String[] args){
-			List<String> suggestions = new ArrayList<String>();
-			switch(args.length){
-			case 3:
-				if(args[2].isEmpty())
-					suggestions.add("" + ((Player) sender).getLocation().getBlockX());
-				break;
-			case 4:
-				if(args[3].isEmpty())
-					suggestions.add("" + ((Player) sender).getLocation().getBlockY());
-				break;
-			case 5:
-				if(args[4].isEmpty())
-					suggestions.add("" + ((Player) sender).getLocation().getBlockZ());
-				break;
-			case 6:
-				for(World world:Bukkit.getWorlds())
-					if(world.getName().toLowerCase().startsWith(args[5].toLowerCase()))
-						suggestions.add(world.getName());
-				break;
-			}
-			return suggestions;
+			return Collections.emptyList();
 		}
 	};
 	

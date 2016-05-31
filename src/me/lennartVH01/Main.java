@@ -5,6 +5,7 @@ import java.io.File;
 import me.lennartVH01.game.GameManager;
 import me.lennartVH01.util.ChatUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -35,6 +36,8 @@ public class Main extends JavaPlugin{
 	@Override
 	public void onDisable(){
 		GameManager.cleanup();
+		
+		Bukkit.getScheduler().cancelTasks(this);
 		
 		/*File persistFile = new File(getDataFolder(), "persist.yml");
 		

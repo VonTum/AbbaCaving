@@ -51,6 +51,7 @@ command:
         success: "Left game %s"
     create:
         success: "Game %s created successfully!"
+        error: "§cGame %s already eists!"
     remove:
         success: "Game %s removed successfully"
         confirm: "Are you sure? Use /abba confirm to confirm"

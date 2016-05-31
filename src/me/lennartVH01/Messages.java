@@ -55,6 +55,7 @@ public class Messages{
 	public static String commandLeaveSuccess;
 	
 	public static String commandCreateSuccess;
+	public static String commandCreateErrorExists;
 	
 	public static String commandRemoveSuccess;
 	public static String commandRemoveConfirm;
@@ -128,6 +129,7 @@ public class Messages{
 		commandLeaveSuccess = load("command.leave.success");
 		
 		commandCreateSuccess = load("command.create.success");
+		commandCreateErrorExists = load("command.create.error");
 		
 		commandRemoveSuccess = load("command.remove.success");
 		commandRemoveConfirm = load("command.remove.confirm");

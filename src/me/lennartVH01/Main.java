@@ -12,10 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin{
-	public static void main(String[] args){
-		String penis = "{\"text\":\"Json Test\",\"color\":\"green\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"SQUID\"}}";
-		System.out.println(ChatUtil.fromRawJSON(penis).toString());
-	}
 	@Override
 	public void onEnable(){
 		//copy files from jar to data folder

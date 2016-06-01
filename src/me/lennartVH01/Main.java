@@ -3,7 +3,6 @@ package me.lennartVH01;
 import java.io.File;
 
 import me.lennartVH01.game.GameManager;
-import me.lennartVH01.util.ChatUtil;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
@@ -20,7 +19,6 @@ public class Main extends JavaPlugin{
 		
 		Config.reload(getConfig());
 		Messages.reload(YamlConfiguration.loadConfiguration(new File(getDataFolder(), "lang.yml")));
-		
 		
 		CommandHandler abbaCmd = new CommandHandler(this);
 		this.getCommand("abba").setExecutor((CommandExecutor) abbaCmd);

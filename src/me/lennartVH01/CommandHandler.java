@@ -10,7 +10,7 @@ import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 
-import me.lennartVH01.game.BasicAbbaGame;
+import me.lennartVH01.game.AbbaGame;
 import me.lennartVH01.game.ContrabandScanner;
 import me.lennartVH01.game.GameManager;
 import me.lennartVH01.game.AbbaGame;
@@ -197,7 +197,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 				
 				gameSpawn = ((Player) sender).getLocation();
 				
-				AbbaGame game = new BasicAbbaGame(plugin, gameName, gameSpawn, Config.defaultDuration, Config.defaultPlayerCap, new ContrabandScanner(Config.contraband), Config.itemValues);
+				AbbaGame game = new AbbaGame(plugin, gameName, gameSpawn, Config.defaultDuration, Config.defaultPlayerCap, new ContrabandScanner(Config.contraband), Config.itemValues);
 				GameManager.registerGame(game);
 				sender.sendMessage(String.format(Messages.commandCreateSuccess, gameName));
 				return true;

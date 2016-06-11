@@ -8,8 +8,8 @@ import me.lennartVH01.Config;
 import me.lennartVH01.Messages;
 import me.lennartVH01.Permission;
 import me.lennartVH01.util.ChatUtil;
-import net.minecraft.server.v1_9_R2.ChatComponentText;
-import net.minecraft.server.v1_9_R2.IChatBaseComponent;
+import net.minecraft.server.v1_10_R1.ChatComponentText;
+import net.minecraft.server.v1_10_R1.IChatBaseComponent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;

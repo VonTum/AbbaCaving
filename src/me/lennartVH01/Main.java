@@ -3,7 +3,6 @@ package me.lennartVH01;
 import java.io.File;
 
 import me.lennartVH01.game.GameManager;
-import me.lennartVH01.util.ChatUtil;
 
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.TabCompleter;
@@ -11,10 +10,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin{
-	public static void main(String[] args){
-		String penis = "{\"text\":\"Json Test\",\"color\":\"green\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":\"SQUID\"}}";
-		System.out.println(ChatUtil.fromRawJSON(penis).toString());
-	}
 	@Override
 	public void onEnable(){
 		//copy files from jar to data folder

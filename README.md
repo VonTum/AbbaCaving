@@ -2,12 +2,14 @@
 Simple Abba managing plugin
 
 ## Usage
-`/abba create [gameName]` to create a game at the current location of the player. 
-To mark a chest to be used for the game, place a sign on the chest with `[abba]` on the first line and optionally the game name on the second line. When completed, the text on the first line should turn blue. 
-Open the game with `/abba open [game]`. This allows players to join the game.
-When all players are ready, use `/abba start [game]` to start the countdown. 
-After the time is up and all players have deposited their ores in the chests, use `/abba tally [game]` to calculate the scores. 
-Once all players have left, remove the game with `/abba remove <game>`
+- In order to play you must first create a game using `/abba create [name]`
+- The game's spawn will be set where you run the command. 
+- Once the game is created, it must be opened for players to join using `/abba open [name]`
+- The game can be closed using `/abba close`
+- To join a game, use `/abba join [name]`, this command is enabled for all players by default.
+- To configure the game, use `/abba config <name> ...`
+- Once the players have joined, use `/abba start [name]` to start the game
+- To remove a game, use `/abba remove [name]`
 
 ## Commands
 Command | Description

@@ -1,6 +1,15 @@
 # AbbaCaving
 Simple Abba managing plugin
 
+This is a plugin designed to make it easier to create and manage the popular gametype *AbbaCaving*. This gametype consists of sending the players down a cave with Silk Touch picks. Each ore is assigned a certain number of points. The player who gathers the most points gets all the ores of all the players combined. 
+
+
+## Features
+- Quickly create Abba Games
+- Players can join these games and will get teleported there
+- If a player dies they can quickly rejoin the game
+- At the end of the game, all players are teleported back and their scores are counted
+
 ## Usage
 - In order to play you must first create a game using `/abba create [name]`
 - The game's spawn will be set where you run the command. 

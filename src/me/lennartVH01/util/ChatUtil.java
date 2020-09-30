@@ -1,18 +1,23 @@
 package me.lennartVH01.util;
 
-import net.minecraft.server.v1_10_R1.IChatBaseComponent;
-import net.minecraft.server.v1_10_R1.PacketPlayOutChat;
+import net.minecraft.server.v1_16_R2.ChatMessageType;
+import net.minecraft.server.v1_16_R2.IChatBaseComponent;
+import net.minecraft.server.v1_16_R2.PacketPlayOutChat;
 
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftItemStack;
+import java.util.UUID;
+
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 
 public class ChatUtil {
 	public static void send(Player player, IChatBaseComponent chat) {
-		((CraftPlayer) player).getHandle().playerConnection.sendPacket(new PacketPlayOutChat(chat));
+		// still hacky, still no official bukkit support
+		PacketPlayOutChat packet = new PacketPlayOutChat(chat, ChatMessageType.CHAT, UUID.randomUUID());
+		((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
 	}
 	public static IChatBaseComponent stackToChat(org.bukkit.inventory.ItemStack stack){
-		return CraftItemStack.asNMSCopy(stack).B();
+		return CraftItemStack.asNMSCopy(stack).C();
 	}
 	public static IChatBaseComponent fromRawJSON(String json){
 		return IChatBaseComponent.ChatSerializer.a(json);

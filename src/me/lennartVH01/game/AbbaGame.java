@@ -6,7 +6,7 @@ import java.util.List;
 
 
 
-import net.minecraft.server.v1_10_R1.IChatBaseComponent;
+import net.minecraft.server.v1_16_R2.IChatBaseComponent;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;

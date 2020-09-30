@@ -8,8 +8,9 @@ import me.lennartVH01.Config;
 import me.lennartVH01.Messages;
 import me.lennartVH01.Permission;
 import me.lennartVH01.util.ChatUtil;
-import net.minecraft.server.v1_10_R1.ChatComponentText;
-import net.minecraft.server.v1_10_R1.IChatBaseComponent;
+import me.lennartVH01.util.Tuple2;
+import net.minecraft.server.v1_16_R2.ChatComponentText;
+import net.minecraft.server.v1_16_R2.IChatBaseComponent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -120,15 +121,25 @@ public class BasicAbbaGame implements AbbaGame{
 				totalItems[i] += score.count[i];
 			}
 		}
-		StringBuilder msgBuilder = new StringBuilder("[");
+		ArrayList<Tuple2<ItemStack, Integer>> listCollected = new ArrayList<Tuple2<ItemStack, Integer>>();
+		
 		for(int i = 0; i < itemValues.length; i++){
-			if(totalItems[i] > 0)
-				msgBuilder.append("{\"translate\":\"" + ChatUtil.getName(itemValues[i].asItemStack()) + "\"},\": " + totalItems[i] + "\n\",");
+			if(totalItems[i] > 0){
+				listCollected.add(new Tuple2<ItemStack, Integer>(itemValues[i].asItemStack(), totalItems[i]));
+			}
 		}
-		if(msgBuilder.length() > 1){
-			msgBuilder.replace(msgBuilder.length() - 3, msgBuilder.length() - 1, "\"]");
-			broadcast(ChatUtil.fromRawJSON(msgBuilder.toString()));
+		if(listCollected.size() > 0){
+			IChatBaseComponent message = new ChatComponentText("");
 			
+			for(int i = 0; i < listCollected.size(); i++){
+				message.getSiblings().add(ChatUtil.stackToChat(listCollected.get(i).arg1));
+				String countMsg = ": " + listCollected.get(i).arg2;
+				if(i < listCollected.size() - 1){
+					countMsg += "\n";
+				}
+				message.getSiblings().add(new ChatComponentText(countMsg));
+			}
+			broadcast(message);
 		}
 		
 		
@@ -160,7 +171,7 @@ public class BasicAbbaGame implements AbbaGame{
 				for(ItemStack stack:illegalItems){
 					IChatBaseComponent chatStack = ChatUtil.stackToChat(stack);
 					IChatBaseComponent chatText = new ChatComponentText("§c - ");
-					chatText.addSibling(chatStack);
+					chatText.getSiblings().add(chatStack);
 					
 					ChatUtil.send(p, chatText);
 					

@@ -118,7 +118,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 			AbbaGame game = getGame(args, sender);
 			if(game == null)
 				return false;
-			String message = (game.isOpen() ? "§a" : "§c") + "[" + game.getName() + "] (" + game.getPlayerCount() + "/" + game.getPlayerCap() + ")" + game.getState().toString() + "\nPlayers:";
+			String message = (game.isOpen() ? "§a" : "§c") + "[" + game.getName() + "] (" + game.getPlayerCount() + "/" + game.getPlayerCap() + ") " + game.getState().toString() + "\nPlayers:";
 			for(Player p:game.getPlayers()){
 				message += "\n" + p.getName();
 			}

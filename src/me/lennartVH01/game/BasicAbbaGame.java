@@ -3,12 +3,11 @@ package me.lennartVH01.game;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
+import me.lennartVH01.CollectionHandler;
 import me.lennartVH01.Config;
 import me.lennartVH01.Messages;
 import me.lennartVH01.Permission;
 import me.lennartVH01.util.ChatUtil;
-import me.lennartVH01.util.Tuple2;
 import net.minecraft.server.v1_16_R2.ChatComponentText;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent;
 
@@ -82,9 +81,9 @@ public class BasicAbbaGame implements AbbaGame{
 		}
 	}
 	private void clockTickRunning(){
-		if(timeLeft <= 0)
+		if(timeLeft <= 0){
 			endGame();
-		else{
+		}else{
 			timerScore.setScore(timeLeft);
 			timeLeft--;
 		}
@@ -121,19 +120,19 @@ public class BasicAbbaGame implements AbbaGame{
 				totalItems[i] += score.count[i];
 			}
 		}
-		ArrayList<Tuple2<ItemStack, Integer>> listCollected = new ArrayList<Tuple2<ItemStack, Integer>>();
+		ArrayList<CollectionInfo> listCollected = new ArrayList<CollectionInfo>();
 		
 		for(int i = 0; i < itemValues.length; i++){
 			if(totalItems[i] > 0){
-				listCollected.add(new Tuple2<ItemStack, Integer>(itemValues[i].asItemStack(), totalItems[i]));
+				listCollected.add(new CollectionInfo(itemValues[i].asItemStack(), totalItems[i]));
 			}
 		}
 		if(listCollected.size() > 0){
 			IChatBaseComponent message = new ChatComponentText("");
 			
 			for(int i = 0; i < listCollected.size(); i++){
-				message.getSiblings().add(ChatUtil.stackToChat(listCollected.get(i).arg1));
-				String countMsg = ": " + listCollected.get(i).arg2;
+				message.getSiblings().add(ChatUtil.stackToChat(listCollected.get(i).item));
+				String countMsg = ": " + listCollected.get(i).count;
 				if(i < listCollected.size() - 1){
 					countMsg += "\n";
 				}
@@ -150,9 +149,61 @@ public class BasicAbbaGame implements AbbaGame{
 			scoreboardScore.setScore(score.total);
 			
 		}
+		
+		if(Config.redistributionEnabled){
+			double[] distributionFractions = getRedistributionFractions(scores.size());
+			
+			int[] leftOverItems = new int[totalItems.length];
+			for(int i = 0; i < totalItems.length; i++){
+				leftOverItems[i] = totalItems[i];
+			}
+			
+			for(int curPlayer = 1; curPlayer < scores.size(); curPlayer++){
+				List<CollectionInfo> allottedItems = new ArrayList<CollectionInfo>();
+				
+				double allottedFraction = distributionFractions[curPlayer];
+				for(int i = 0; i < totalItems.length; i++){
+					int itemsForThisPlayer = (int) (allottedFraction * totalItems[i]);
+					if(itemsForThisPlayer > 0){
+						allottedItems.add(new CollectionInfo(itemValues[i].asItemStack(), itemsForThisPlayer));
+						leftOverItems[i] -= itemsForThisPlayer;
+					}
+				}
+				CollectionHandler.pushItemsForCollection(scores.get(curPlayer).player, allottedItems);
+			}
+			// give left over items to player #1, due to rounding this will be rounded up
+			List<CollectionInfo> allottedItems = new ArrayList<CollectionInfo>();
+			for(int i = 0; i < totalItems.length; i++){
+				int itemsForThisPlayer = leftOverItems[i];
+				if(itemsForThisPlayer > 0){
+					allottedItems.add(new CollectionInfo(itemValues[i].asItemStack(), itemsForThisPlayer));
+				}
+			}
+			CollectionHandler.pushItemsForCollection(scores.get(0).player, allottedItems);
+		}
 	}
 	
-	
+	static double[] getRedistributionFractions(int playerCount){
+		double[] distributionFractions = new double[playerCount];
+		int numberOfLeaderboardPlayers = Math.min(playerCount, Config.topReturns.length);
+		int numberOfNonLeaderboardPlayers = Math.max(playerCount - Config.topReturns.length, 0);
+		
+		int totalValue = Config.otherPlayersValue * (Config.otherPlayersShare ? 1 : numberOfNonLeaderboardPlayers);
+		
+		for(int i = 0; i < numberOfLeaderboardPlayers; i++) totalValue += Config.topReturns[i];
+		for(int i = 0; i < numberOfLeaderboardPlayers; i++){
+			distributionFractions[i] = ((double) Config.topReturns[i]) / totalValue;
+		}
+		if(numberOfNonLeaderboardPlayers >= 1){
+			double otherPlayerFraction = (Config.otherPlayersShare ? (double) Config.otherPlayersValue : ((double) Config.otherPlayersValue) / numberOfNonLeaderboardPlayers);
+			
+			for(int i = Config.topReturns.length; i < playerCount; i++){
+				distributionFractions[i] = otherPlayerFraction;
+			}
+		}
+		
+		return distributionFractions;
+	}
 	
 	@Override
 	public boolean join(final Player p){
@@ -169,12 +220,7 @@ public class BasicAbbaGame implements AbbaGame{
 			if(!illegalItems.isEmpty()){
 				p.sendMessage(Messages.errorContraband);
 				for(ItemStack stack:illegalItems){
-					IChatBaseComponent chatStack = ChatUtil.stackToChat(stack);
-					IChatBaseComponent chatText = new ChatComponentText("§c - ");
-					chatText.getSiblings().add(chatStack);
-					
-					ChatUtil.send(p, chatText);
-					
+					ChatUtil.sendItemStack(p, stack, "§c - ");
 				}
 				return false;
 			}
@@ -318,6 +364,16 @@ public class BasicAbbaGame implements AbbaGame{
 			for(int i = 0; i < itemValues.length; i++){
 				score.total += itemValues[i].getValue() * score.count[i];
 				totalItems[i] += score.count[i];
+			}
+			
+			if(Config.redistributionEnabled){
+				for(StackTester tester : itemValues){
+					for(ItemStack invItem : p.getInventory().getContents()){
+						if(invItem != null && tester.isSimilar(invItem)){
+							p.getInventory().remove(invItem);
+						}
+					}
+				}
 			}
 		}
 		

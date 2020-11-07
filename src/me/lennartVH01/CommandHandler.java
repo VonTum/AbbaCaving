@@ -41,6 +41,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 		commands.put("info", infoCmd);
 		commands.put("list", listCmd);
 		commands.put("confirm", confirmCmd);
+		commands.put("collect", collectCmd);
 		
 		commands.put("create", createCmd);
 		commands.put("remove", removeCmd);
@@ -165,6 +166,25 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 				return code.run();
 			}else{
 				sender.sendMessage(Messages.errorNoPendingOperation);
+				return false;
+			}
+		}
+		@Override public List<String> tabComplete(CommandSender sender, String[] args){
+			return Collections.emptyList();
+		}
+	};
+	
+	private CommandFunc collectCmd = new CommandFunc(){
+		@Override public boolean hasPermission(CommandSender sender){return Permission.BASIC.has(sender);}
+		@Override public boolean run(CommandSender sender, String[] args){
+			if(sender instanceof Player){
+				if(!CollectionHandler.collect((Player) sender)){
+					sender.sendMessage(Messages.errorNoItemsToCollect);
+					return false;
+				}
+				return true;
+			}else{
+				sender.sendMessage(Messages.errorMustBeInGame);
 				return false;
 			}
 		}

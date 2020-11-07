@@ -5,6 +5,7 @@ import java.util.Map;
 
 import me.lennartVH01.game.StackTester;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -13,6 +14,11 @@ public class Config{
 	
 	public static StackTester[] itemValues;
 	public static StackTester[] contraband;
+	
+	public static boolean redistributionEnabled;
+	public static int[] topReturns;
+	public static int otherPlayersValue;
+	public static boolean otherPlayersShare;
 	
 	public static int defaultDuration;
 	public static int defaultPlayerCap;
@@ -45,7 +51,16 @@ public class Config{
 			contraband[contrabandList.size() + i] = tester;
 		}
 		
+		ConfigurationSection redistribution = config.getConfigurationSection("Redistribution");
 		
+		redistributionEnabled = redistribution.getBoolean("Enabled");
+		@SuppressWarnings("unchecked")
+		List<Integer> topRets = (List<Integer>) redistribution.getList("Top");
+		topReturns = new int[topRets.size()];
+		for(int i = 0; i < topRets.size(); i++) topReturns[i] = topRets.get(i);
+		
+		otherPlayersValue = redistribution.getInt("Other");
+		otherPlayersShare = redistribution.getBoolean("OthersShare");
 	}
 	private static StackTester toStackTester(Object input){
 		try{

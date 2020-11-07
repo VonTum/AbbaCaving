@@ -14,6 +14,8 @@ public class Messages{
 	public static String gameCountdown;
 	public static String gamePause;
 	public static String gameEnded;
+	public static String pickupCollected;
+	public static String allItemsCollected;
 	
 	public static String errorNoGames;
 	public static String errorNoPermission;
@@ -29,6 +31,7 @@ public class Messages{
 	public static String errorNotWhitelisted;
 	public static String errorBlacklisted;
 	public static String errorContraband;
+	public static String errorNoItemsToCollect;
 	
 	public static String errorBreakClaimedChest;
 	public static String chestCreateSuccess;
@@ -41,6 +44,7 @@ public class Messages{
 	public static String helpInfo;
 	public static String helpList;
 	public static String helpCalc;
+	public static String helpCollect;
 	
 	public static String helpCreate;
 	public static String helpRemove;
@@ -89,6 +93,9 @@ public class Messages{
 		gamePause = load("msg.gamePause");
 		gameEnded = load("msg.gameEnd");
 		
+		pickupCollected = load("msg.pickupCollected");
+		allItemsCollected = load("msg.allItemsCollected");
+		
 		errorNoGames = load("error.noGames");
 		errorNoPermission = load("error.noPermission");
 		errorNoPendingOperation = load("error.noPendingOperation");
@@ -102,6 +109,7 @@ public class Messages{
 		errorNotWhitelisted = load("error.notWhitelisted");
 		errorBlacklisted = load("error.blacklisted");
 		errorContraband = load("error.contraband");
+		errorNoItemsToCollect = load("error.noItemsToCollect");
 		
 		errorBreakClaimedChest = load("error.breakClaimedChest");
 		chestCreateSuccess = load("chest.create");
@@ -114,6 +122,7 @@ public class Messages{
 		helpInfo = load("help.info");
 		helpList = load("help.list");
 		helpCalc = load("help.calc");
+		helpCollect = load("help.collect");
 		
 		helpCreate = load("help.create");
 		helpRemove = load("help.remove");

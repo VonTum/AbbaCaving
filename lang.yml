@@ -7,6 +7,9 @@ msg:
     gamePause: "&aThe game has been paused!"
     gameEnd: "&aThe game has ended!\nTotal Items Collected:"
     
+    pickupCollected: "&6You have uncollected items left.\nUse &a/abba collect &6to collect your items."
+    allItemsCollected: "All items collected."
+    
 error:
     noGames: "&cNo Games found!"
     noPermission: "&cYou don't have permission to use this command!"
@@ -22,7 +25,7 @@ error:
     blacklisted: "&cYou are blacklisted for this game!"
     contraband: "&cYou cannot join the game with the following items: "
     breakClaimedChest: "&cYou cannot break an occupied chest!"
-    
+    noItemsToCollect: "&cYou have no items to collect!"
 help:
     abba: "&aabba <%s>"
     
@@ -31,6 +34,7 @@ help:
     info: "&aabba info [game]&f: Displays info about an Abba Match"
     list: "&aabba list&f: Lists all Abba Matches"
     calc: "&aabba calc&f: Calculates the score of your current inventory"
+    collect: "&aabba collect&f: Collects the won items"
     
     create: "&aabba create [game]&f: Creates an Abba Game"
     remove: "&aabba remove <game>&f: Removes an Abba Game"

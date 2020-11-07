@@ -1,5 +1,6 @@
 package me.lennartVH01.util;
 
+import net.minecraft.server.v1_16_R2.ChatComponentText;
 import net.minecraft.server.v1_16_R2.ChatMessageType;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent;
 import net.minecraft.server.v1_16_R2.PacketPlayOutChat;
@@ -24,5 +25,12 @@ public class ChatUtil {
 	}
 	public static String getName(org.bukkit.inventory.ItemStack stack){
 		return CraftItemStack.asNMSCopy(stack).getItem().getName() + ".name";
+	}
+	public static void sendItemStack(Player player, org.bukkit.inventory.ItemStack item, String prefix){
+		IChatBaseComponent chatStack = stackToChat(item);
+		IChatBaseComponent chatText = new ChatComponentText(prefix);
+		chatText.getSiblings().add(chatStack);
+		
+		send(player, chatText);
 	}
 }

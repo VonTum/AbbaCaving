@@ -151,7 +151,7 @@ public class BasicAbbaGame implements AbbaGame{
 		}
 		
 		if(Config.redistributionEnabled){
-			double[] distributionFractions = getRedistributionFractions(scores.size());
+			double[] distributionFractions = getRedistributionFractions(scores.size(), Config.topReturns, Config.otherPlayersValue, Config.otherPlayersShare);
 			
 			int[] leftOverItems = new int[totalItems.length];
 			for(int i = 0; i < totalItems.length; i++){
@@ -183,21 +183,25 @@ public class BasicAbbaGame implements AbbaGame{
 		}
 	}
 	
-	static double[] getRedistributionFractions(int playerCount){
+	static double[] getRedistributionFractions(int playerCount, int[] topReturns, int otherPlayersValue, boolean otherPlayersShare){
 		double[] distributionFractions = new double[playerCount];
-		int numberOfLeaderboardPlayers = Math.min(playerCount, Config.topReturns.length);
-		int numberOfNonLeaderboardPlayers = Math.max(playerCount - Config.topReturns.length, 0);
+		int numberOfLeaderboardPlayers = Math.min(playerCount, topReturns.length);
+		int numberOfNonLeaderboardPlayers = Math.max(playerCount - topReturns.length, 0);
 		
-		int totalValue = Config.otherPlayersValue * (Config.otherPlayersShare ? 1 : numberOfNonLeaderboardPlayers);
+		int totalValue = otherPlayersValue;
+		if(!otherPlayersShare) totalValue *= numberOfNonLeaderboardPlayers;
 		
-		for(int i = 0; i < numberOfLeaderboardPlayers; i++) totalValue += Config.topReturns[i];
+		for(int i = 0; i < numberOfLeaderboardPlayers; i++) totalValue += topReturns[i];
 		for(int i = 0; i < numberOfLeaderboardPlayers; i++){
-			distributionFractions[i] = ((double) Config.topReturns[i]) / totalValue;
+			distributionFractions[i] = ((double) topReturns[i]) / totalValue;
 		}
 		if(numberOfNonLeaderboardPlayers >= 1){
-			double otherPlayerFraction = (Config.otherPlayersShare ? (double) Config.otherPlayersValue : ((double) Config.otherPlayersValue) / numberOfNonLeaderboardPlayers);
+			double valuePerOtherPlayer = otherPlayersValue;
+			if(otherPlayersShare) valuePerOtherPlayer /= numberOfNonLeaderboardPlayers;
 			
-			for(int i = Config.topReturns.length; i < playerCount; i++){
+			double otherPlayerFraction = valuePerOtherPlayer / totalValue;
+			
+			for(int i = topReturns.length; i < playerCount; i++){
 				distributionFractions[i] = otherPlayerFraction;
 			}
 		}

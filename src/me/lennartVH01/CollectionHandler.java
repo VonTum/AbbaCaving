@@ -48,6 +48,7 @@ public class CollectionHandler {
 				int leftOver = couldntStore.get(0).getAmount();
 				int given = numberToGive - leftOver;
 				item.count -= given;
+				return;
 			}else{
 				item.count -= numberToGive;
 			}
